@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Singularity Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000; --side:#0b0b0b; --line:#1f1f1f; --hover:#161616; --active:#1c1c1c;
+  --bubble:#1f1f1f; --comp:#141414; --compline:#2a2a2a;
+  --text:#f2f2f2; --muted:#8b8b8b; --dim:#5c5c5c;
+  --warn:#f5a524; --bad:#ff5f56; --good:#3ecf8e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,-apple-system,sans-serif;display:flex;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* sidebar */
+aside{width:272px;flex:none;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 10px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px;font-weight:600;font-size:17px}
+.logo{width:26px;height:26px;border-radius:7px;background:#fff;color:#000;display:grid;place-items:center;font-weight:700;font-size:14px}
+.search{margin:0 4px 6px;background:var(--comp);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--muted);font-size:14px}
+.sec{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;padding:14px 10px 6px}
+.item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:10px;text-align:left;font-size:14px}
+.item:hover{background:var(--hover)}
+.item.on{background:var(--active)}
+.item .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .sub{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{min-width:18px;height:18px;border-radius:9px;background:#fff;color:#000;font-size:11px;font-weight:600;display:grid;place-items:center;padding:0 5px}
+.badge.alert{background:var(--bad);color:#fff}
+.ag{width:28px;height:28px;flex:none;border-radius:8px;background:#262626;display:grid;place-items:center;font-size:12px;font-weight:600}
+.hu{width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;color:#000}
+.navs{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none}
+.foot{margin-top:auto;border-top:1px solid var(--line);padding-top:10px}
+
+/* main */
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+header{height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--line)}
+header h1{font-size:15px;font-weight:600}
+header .meta{font-size:12px;color:var(--muted)}
+.stack{display:flex;margin-left:4px}.stack>*{margin-left:-6px;border:2px solid var(--bg);width:26px;height:26px;font-size:10px}
+.hbtn{margin-left:auto;display:flex;gap:8px}
+.pill{border:1px solid var(--compline);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.pill:hover{color:var(--text);border-color:#444}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+#menu{display:none}
+
+#feed{flex:1;overflow-y:auto}
+.col{max-width:780px;margin:0 auto;padding:28px 20px 40px;display:flex;flex-direction:column;gap:22px}
+.day{align-self:center;font-size:12px;color:var(--dim)}
+.u{align-self:flex-end;max-width:78%;background:var(--bubble);padding:10px 16px;border-radius:22px 22px 6px 22px}
+.msg{display:flex;gap:12px;align-items:flex-start}
+.msg .body{flex:1;min-width:0}
+.who{font-size:13px;font-weight:600;margin-bottom:2px}.who span{font-weight:400;color:var(--dim);margin-left:6px}
+.body p+p,.body p+ul,.body ul+p{margin-top:8px}
+.body ul,.body ol{padding-left:20px}
+.cite{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--compline);border-radius:6px;padding:0 6px;margin:6px 4px 0 0}
+.tag{font-size:11px;color:var(--muted);border:1px solid var(--compline);border-radius:999px;padding:1px 8px;margin-left:6px;font-weight:400}
+
+/* cards */
+.card{border:1px solid var(--compline);border-radius:16px;background:#0e0e0e;padding:16px;margin-top:10px}
+.card.warn{border-color:#5a4214}.card.bad{border-color:#5c1f1c}
+.ctitle{display:flex;align-items:center;gap:8px;font-weight:600}
+.lvl{width:8px;height:8px;border-radius:50%}
+.card .cbody{color:#cfcfcf;font-size:14px;margin-top:6px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px;margin-top:10px;color:var(--muted)}.kv b{color:var(--text);font-weight:500}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.act{border:1px solid var(--compline);border-radius:999px;padding:7px 14px;font-size:13px}
+.act:hover{background:var(--hover)}
+.act.pri{background:#fff;color:#000;border-color:#fff}.act.pri:hover{background:#ddd}
+.act.danger{border-color:#7a2a26;color:#ff8a83}
+.act[disabled]{opacity:.35;cursor:default}
+.resolved{margin-top:12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+.kpi{background:#151515;border-radius:12px;padding:10px 12px}
+.kpi small{display:block;font-size:12px;color:var(--muted)}
+.kpi b{font-size:20px;font-weight:600}
+.kpi i{font-style:normal;font-size:12px;margin-left:6px}
+.up{color:var(--good)}.down{color:var(--bad)}
+.spark{width:100%;height:56px;margin-top:10px}
+.thread{margin-top:10px;padding-left:14px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:10px;font-size:14px}
+.thread .who{font-size:12px}
+.typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:4px;animation:b 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes b{50%{opacity:.2}}
+
+/* composer */
+.compwrap{flex:none;padding:0 20px 18px}
+.comp{max-width:780px;margin:0 auto;background:var(--comp);border:1px solid var(--compline);border-radius:26px;padding:12px 12px 10px 18px}
+.comp textarea{width:100%;background:none;border:0;outline:0;resize:none;color:var(--text);font:inherit;height:26px}
+.crow{display:flex;align-items:center;gap:8px;margin-top:6px}
+.chip{border:1px solid var(--compline);border-radius:999px;padding:4px 11px;font-size:13px;color:var(--muted)}
+.send{margin-left:auto;width:34px;height:34px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;font-weight:700}
+.note{text-align:center;font-size:11px;color:var(--dim);margin-top:8px}
+
+/* settings modal */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;place-items:center;padding:16px;z-index:9}
+#modal.on{display:grid}
+.sheet{background:#0e0e0e;border:1px solid var(--compline);border-radius:18px;max-width:520px;width:100%;padding:22px;max-height:90vh;overflow:auto}
+.sheet h2{font-size:17px;margin-bottom:4px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.row small{display:block;color:var(--muted);font-size:12px}
+code{font-size:12px;color:#cfcfcf;background:#181818;padding:2px 6px;border-radius:6px}
+
+.sys{align-self:center;font-size:12px;color:var(--muted);border:1px dashed var(--compline);border-radius:999px;padding:4px 12px;text-align:center;max-width:90%}
+.day{border-top:1px solid var(--line);align-self:stretch;text-align:center;padding-top:14px;margin-top:6px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.tbl th{text-align:left;font-weight:500;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:7px 8px;border-bottom:1px solid #171717}
+.tbl tr.pick td{background:#151515}
+.fld{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid #171717;font-size:13px}
+.fld span{color:var(--muted)}.fld b{font-weight:500;background:#151515;border:1px solid var(--compline);border-radius:8px;padding:3px 10px;min-width:90px;text-align:right}
+.fld b.ok{color:var(--good)}.fld b.no{color:var(--bad)}
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.file{display:flex;align-items:center;gap:8px;border:1px solid var(--compline);border-radius:10px;padding:6px 10px;font-size:13px}
+.file i{font-style:normal;font-size:10px;font-weight:600;background:#262626;border-radius:4px;padding:2px 5px;color:var(--muted)}
+.lnk{display:inline-flex;margin-top:10px;font-size:13px;color:var(--muted);border:1px solid var(--compline);border-radius:999px;padding:4px 12px}
+.lnk:hover{color:var(--text)}
+.via{font-size:11px;color:var(--dim);margin-left:6px;font-weight:400}
+.wrap{overflow-x:auto}
+
+/* desktop frame */
+body{display:block;overflow:hidden;background:#0b1a2e;
+  background:radial-gradient(1200px 700px at 15% 20%,#2f6fd6 0%,transparent 60%),radial-gradient(900px 700px at 85% 80%,#00a6b8 0%,transparent 55%),radial-gradient(800px 600px at 70% 10%,#6a3fd0 0%,transparent 60%),linear-gradient(160deg,#0a1630,#071022)}
+body.dragging,body.dragging *{user-select:none!important}
+.menubar{position:fixed;top:0;left:0;right:0;height:28px;display:flex;align-items:center;gap:18px;padding:0 14px;font:13px/1 -apple-system,system-ui,sans-serif;color:#fff;
+  background:rgba(20,24,36,.35);backdrop-filter:blur(30px) saturate(1.6);-webkit-backdrop-filter:blur(30px) saturate(1.6);z-index:9000;user-select:none}
+.menubar b{font-weight:700}.menubar .r{margin-left:auto;display:flex;gap:14px;align-items:center}
+.menubar svg{display:block}
+.mb-ic{display:grid;place-items:center;height:22px;padding:0 6px;border-radius:5px;cursor:default}
+.mb-ic:hover,.mb-ic.on{background:rgba(255,255,255,.2)}
+.win{position:absolute;display:flex;border-radius:12px;overflow:hidden;min-width:720px;min-height:460px;
+  background:var(--bg);border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 0 0 .5px rgba(0,0,0,.8),0 22px 70px 4px rgba(0,0,0,.56),0 8px 20px rgba(0,0,0,.35)}
+.win.hidden{display:none}
+.win:not(.front){box-shadow:0 0 0 .5px rgba(0,0,0,.6),0 12px 40px rgba(0,0,0,.4)}
+.win:not(.front) .lights i{background:#4a4a4a!important}
+.lights{display:flex;gap:8px;padding:4px 8px 14px}
+.lights i{width:12px;height:12px;border-radius:50%;display:block;cursor:default}
+.rz{position:absolute;z-index:50}
+.rz.n,.rz.s{left:8px;right:8px;height:6px;cursor:ns-resize}.rz.n{top:0}.rz.s{bottom:0}
+.rz.e,.rz.w{top:8px;bottom:8px;width:6px;cursor:ew-resize}.rz.e{right:0}.rz.w{left:0}
+.rz.ne,.rz.nw,.rz.se,.rz.sw{width:12px;height:12px}
+.rz.ne{top:0;right:0;cursor:nesw-resize}.rz.sw{bottom:0;left:0;cursor:nesw-resize}
+.rz.nw{top:0;left:0;cursor:nwse-resize}.rz.se{bottom:0;right:0;cursor:nwse-resize}
+.m40{height:17px;width:auto;display:block}
+.brand{flex-direction:column;align-items:flex-start;gap:4px}
+.brand small{font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+#modal{position:absolute}
+
+/* dock */
+.dock{position:fixed;left:50%;bottom:6px;transform:translateX(-50%);display:flex;align-items:flex-end;gap:6px;padding:6px 8px;border-radius:20px;z-index:9000;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(30px) saturate(1.6);-webkit-backdrop-filter:blur(30px) saturate(1.6)}
+.dk{position:relative;width:52px;height:52px;border-radius:12px;display:grid;place-items:center;transition:transform .15s;cursor:default;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.dk:hover{transform:translateY(-8px) scale(1.15)}
+.dk:hover::after{content:attr(data-n);position:absolute;bottom:68px;left:50%;transform:translateX(-50%);white-space:nowrap;font:12px -apple-system,system-ui,sans-serif;color:#fff;background:rgba(30,30,30,.85);padding:4px 10px;border-radius:6px}
+.dk.run::before{content:'';position:absolute;bottom:-6px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:rgba(255,255,255,.85)}
+.dsep{width:1px;height:46px;background:rgba(255,255,255,.3);margin:0 4px 3px}
+@keyframes bounce{30%{transform:translateY(-18px)}60%{transform:translateY(0)}80%{transform:translateY(-6px)}}
+.dk.bounce{animation:bounce .7s}
+
+/* ---------- Microsoft Teams (light) ---------- */
+.tm{--tp:#5b5fc7;--tbg:#f5f5f5;--trail:#ebebeb;--tline:#e0e0e0;--ttx:#242424;--tmut:#616161;--tme:#e8ebfa;
+  flex:1;display:flex;flex-direction:column;min-width:0;background:var(--trail);color:var(--ttx);font:14px/20px "Segoe UI",-apple-system,system-ui,sans-serif}
+.tm svg{display:block}
+.t-title{height:48px;flex:none;display:flex;align-items:center;gap:12px;padding:0 12px 0 14px}
+.t-title .lights{padding:0 10px 0 0}
+.t-nav{display:flex;gap:4px;color:var(--tmut)}
+.t-search{flex:1;max-width:520px;margin:0 auto;height:32px;border-radius:4px;background:#fff;border:1px solid #d1d1d1;display:flex;align-items:center;gap:8px;padding:0 10px;color:#707070;font-size:14px}
+.t-me{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tmut)}
+.t-body{flex:1;display:flex;min-height:0}
+.t-rail{width:68px;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:4px}
+.t-ri{width:60px;height:54px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:var(--tmut);position:relative;cursor:default}
+.t-ri:hover{background:#e0e0e0}
+.t-ri.on{color:var(--tp)}
+.t-ri.on::before{content:'';position:absolute;left:-4px;top:14px;bottom:14px;width:3px;border-radius:2px;background:var(--tp)}
+.t-ri .t-bdg{position:absolute;top:6px;right:12px;min-width:16px;height:16px;border-radius:8px;background:#c4314b;color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center;padding:0 4px}
+.t-list{width:320px;flex:none;background:var(--tbg);border-radius:8px 0 0 0;border-right:1px solid var(--tline);display:flex;flex-direction:column;min-height:0}
+.t-lh{height:56px;flex:none;display:flex;align-items:center;padding:0 16px;font-weight:700;font-size:18px;gap:8px}
+.t-lh .sp{flex:1}
+.t-lh i{width:28px;height:28px;border-radius:4px;display:grid;place-items:center;color:var(--tmut)}
+.t-lh i:hover{background:#e0e0e0}
+.t-scroll{flex:1;overflow-y:auto;padding:0 8px 12px}
+.t-sec{font-size:12px;font-weight:600;color:var(--tmut);padding:12px 8px 4px;display:flex;gap:6px;align-items:center}
+.t-ci{display:flex;gap:10px;align-items:center;padding:8px;border-radius:6px;cursor:default}
+.t-ci:hover{background:#ebebeb}
+.t-ci.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.t-ci .t-cm{flex:1;min-width:0}
+.t-ci .t-cn{display:flex;gap:6px;align-items:baseline;font-size:14px}
+.t-ci .t-cn b{flex:1;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-ci.unread .t-cn b{font-weight:700}
+.t-ci .t-cn small{font-size:12px;color:var(--tmut)}
+.t-ci .t-cp{font-size:12px;color:var(--tmut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-ci.unread .t-cp{color:var(--ttx);font-weight:600}
+.t-av{width:32px;height:32px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;color:#242424;position:relative}
+.t-av.app{border-radius:6px;background:#0b0b0b}
+.t-av.grp{background:#e0e0e0;color:var(--tmut)}
+.t-av.sm{width:28px;height:28px;font-size:11px}
+.t-av .pr{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;background:#6bb700;border:2px solid var(--tbg)}
+.t-av .pr.away{background:#ffaa44}.t-av .pr.off{background:#fff;border-color:#8a8a8a;width:9px;height:9px}
+.t-team{display:flex;gap:10px;align-items:center;padding:8px;font-weight:600;font-size:14px;border-radius:6px}
+.t-tav{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700}
+.t-ch{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 46px;border-radius:6px;font-size:14px;cursor:default}
+.t-ch:hover{background:#ebebeb}.t-ch.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.t-ch.unread{font-weight:700}
+.t-ch .sync{margin-left:auto;width:16px;height:16px;border-radius:4px;background:#0b0b0b;display:grid;place-items:center}
+.t-main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--tbg)}
+.t-mh{flex:none;background:#fff;border-bottom:1px solid var(--tline);padding:0 16px;display:flex;align-items:center;gap:10px;height:56px}
+.t-mh b{font-size:16px;font-weight:700;white-space:nowrap}
+.t-tabs{display:flex;gap:18px;margin-left:14px;height:100%}
+.t-tabs span{display:flex;align-items:center;color:var(--tmut);font-size:14px;position:relative;gap:6px}
+.t-tabs span.on{color:var(--ttx);font-weight:600}
+.t-tabs span.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:2px 2px 0 0;background:var(--tp)}
+.t-mh .acts{margin-left:auto;display:flex;gap:6px;color:var(--tmut);align-items:center}
+.t-btn{height:32px;border:1px solid #d1d1d1;background:#fff;border-radius:4px;padding:0 12px;display:flex;align-items:center;gap:6px;font:600 14px "Segoe UI",-apple-system,system-ui,sans-serif;color:var(--ttx);cursor:default}
+.t-btn.pri{background:var(--tp);border-color:var(--tp);color:#fff}
+.t-btn:hover{background:#f5f5f5}.t-btn.pri:hover{background:#4f52b2}
+.t-btn[disabled]{opacity:.45}
+.t-feed{flex:1;overflow-y:auto;padding:16px 24px 8px}
+.t-day{display:flex;align-items:center;gap:12px;color:var(--tmut);font-size:12px;margin:18px 0 10px}
+.t-day::before,.t-day::after{content:'';flex:1;height:1px;background:var(--tline)}
+.t-sys{text-align:center;font-size:12px;color:var(--tmut);margin:8px 40px}
+.t-row{display:flex;gap:10px;margin:10px 0;align-items:flex-start;max-width:860px}
+.t-row .t-col{flex:1;min-width:0}
+.t-row .t-bub,.t-mine .t-bub{width:fit-content;max-width:100%}
+.t-ac{width:100%}
+.t-meta{font-size:12px;color:var(--tmut);margin-bottom:2px;display:flex;gap:8px;align-items:center}
+.t-meta b{color:var(--ttx);font-weight:600}
+.t-app{font-size:10px;font-weight:600;color:var(--tmut);border:1px solid #d1d1d1;border-radius:3px;padding:0 4px;line-height:14px}
+.t-bub{background:#fff;border-radius:6px;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.t-bub p+p,.t-bub p+ul,.t-bub ul+p,.t-bub p+ol{margin-top:6px}
+.t-bub ul,.t-bub ol{padding-left:20px}
+.t-bub .cite{display:inline-block;font-size:11px;color:var(--tp);background:#f0f0fa;border-radius:4px;padding:0 6px;margin:6px 4px 0 0;border:0}
+.t-mine{display:flex;flex-direction:column;align-items:flex-end;margin:10px 0 10px auto;max-width:70%}
+.t-mine .t-bub{background:var(--tme)}
+.t-ac{background:#fff;border:1px solid var(--tline);border-radius:8px;padding:14px 16px;margin-top:6px;max-width:560px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.t-ac-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.t-ac-lvl{width:4px;align-self:stretch;border-radius:2px;background:#8a8a8a}
+.t-ac-lvl.warn{background:#f7630c}.t-ac-lvl.bad{background:#c4314b}
+.t-ac-b{margin-top:6px;color:#424242}
+.t-facts{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin-top:10px;font-size:13px}
+.t-facts span{color:var(--tmut)}.t-facts b{font-weight:600}
+.t-ac-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.t-ac-done{margin-top:12px;padding-top:10px;border-top:1px solid var(--tline);font-size:13px;color:var(--tmut)}
+.t-ac-done b{color:var(--ttx)}
+.t-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px}
+.t-kpi{border:1px solid var(--tline);border-radius:6px;padding:8px 10px}
+.t-kpi small{display:block;font-size:12px;color:var(--tmut)}.t-kpi b{font-size:18px}
+.t-kpi i{font-style:normal;font-size:12px;margin-left:4px}.t-kpi i.up{color:#13a10e}.t-kpi i.down{color:#c4314b}
+.t-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.t-tbl th{text-align:left;color:var(--tmut);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--tline)}
+.t-tbl td{padding:6px 8px;border-bottom:1px solid #f0f0f0}
+.t-file{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--tline);border-radius:6px;padding:8px 12px;margin:6px 6px 0 0;font-size:13px}
+.t-file i{font-style:normal;font-size:10px;font-weight:700;color:#fff;background:var(--tp);border-radius:3px;padding:1px 5px}
+.t-post{background:#fff;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);margin:12px 0;max-width:860px}
+.t-post>.t-pin{display:flex;gap:10px;padding:12px 16px}
+.t-post .t-col{flex:1;min-width:0}
+.t-post .t-bub{box-shadow:none;padding:0;background:none}
+.t-reps{border-top:1px solid #f0f0f0;padding:8px 16px 4px 58px}
+.t-reps .t-cnt{font-size:12px;color:var(--tp);font-weight:600;margin-bottom:6px}
+.t-reps .t-row{margin:6px 0}
+.t-reps .t-bub{background:#f5f5f5;box-shadow:none}
+.t-rep{border-top:1px solid #f0f0f0;padding:8px 16px 10px 58px;font-size:13px;color:var(--tmut)}
+.t-comp{flex:none;margin:8px 24px 16px;background:#fff;border-radius:6px;border:1px solid var(--tline);border-bottom:2px solid var(--tp);display:flex;align-items:center;gap:10px;padding:0 10px 0 14px;height:44px}
+.t-comp input{flex:1;border:0;outline:0;font:inherit;color:var(--ttx);background:none}
+.t-comp .ic{color:var(--tmut)}
+.t-sync{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--tmut);background:#f0f0f0;border-radius:4px;padding:2px 8px}
+.t-act{display:flex;gap:10px;padding:10px 8px;border-radius:6px;cursor:default}
+.t-act:hover{background:#ebebeb}
+.t-act .t-cm{flex:1;min-width:0;font-size:13px}
+.t-act .t-cm b{font-weight:600}
+.t-act .t-cm div{color:var(--tmut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-act.unread .t-cm b::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--tp);margin-right:6px;vertical-align:middle}
+
+/* ---------- The Singularity platform (from real product screens) ---------- */
+.pl{--pbg:#04161b;--pside:#071e24;--pcard:#082a33;--pline:#11404b;--pcy:#22c3d6;--ptx:#e7f2f4;--pmut:#8db0b7;--psw:#12a3e3;
+  flex:1;display:flex;min-width:0;background:var(--pbg);color:var(--ptx);font:13px/1.5 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:.03em}
+.p-side{width:240px;flex:none;background:var(--pside);display:flex;flex-direction:column;border-right:1px solid #0d2f37}
+.p-sw{background:var(--psw);padding:10px 16px 16px;color:#fff}
+.p-sw .lights{padding:0 0 12px}
+.p-sw b{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.p-nav{flex:1;overflow-y:auto;padding:12px;scrollbar-width:none}
+.p-ni{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;color:#c4d7db;font-size:12.5px;cursor:default}
+.p-ni:hover{background:#0b2d35}
+.p-ni.on{color:#fff;font-weight:600;background:#0d333c}
+.p-ni.dim{opacity:.55}
+.p-ni svg{flex:none;opacity:.8}
+.p-div{height:1px;background:#123b44;margin:10px 4px}
+.p-plant{background:#0a2930;border-radius:8px;padding:10px 10px 6px;margin-bottom:6px}
+.p-plant b{color:var(--pcy);font-size:12.5px;display:flex;justify-content:space-between}
+.p-plant small{display:flex;justify-content:space-between;font-size:11px;color:#c4d7db;margin:2px 0 6px}
+.p-foot{display:flex;gap:8px;padding:12px}
+.p-foot span{border:1px solid #1d4a54;border-radius:999px;padding:4px 10px;font-size:11.5px;color:var(--pcy);display:flex;gap:6px;align-items:center}
+.p-main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.p-top{flex:none;display:flex;align-items:center;gap:22px;padding:22px 24px 0}
+.p-tabs{display:flex;gap:20px;flex-wrap:wrap}
+.p-tabs span{color:var(--pcy);font-size:13px;text-transform:uppercase;letter-spacing:.06em;padding-bottom:8px;border-bottom:2px solid transparent}
+.p-tabs span.on{color:#fff;border-color:var(--pcy)}
+.p-bell{margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid #1d4a54;display:grid;place-items:center;color:var(--pcy);position:relative}
+.p-bell i{position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:#e5484d}
+.p-body{flex:1;overflow-y:auto;padding:14px 24px 80px}
+.p-crumb{font-size:11.5px;color:var(--pmut)}
+.p-h{font-size:19px;letter-spacing:.06em;text-transform:uppercase;margin:2px 0 14px;font-weight:500}
+.p-sub{display:flex;gap:20px;border-bottom:1px solid var(--pline);margin-bottom:14px}
+.p-sub span{color:var(--pcy);text-transform:uppercase;font-size:12.5px;letter-spacing:.06em;padding-bottom:8px;border-bottom:2px solid transparent}
+.p-sub span.on{color:#fff;border-color:#fff}
+.p-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.p-tile{background:#05211a;border:1px solid #2fbf71;border-left-width:3px;border-radius:6px;padding:14px;text-align:center}
+.p-tile.red{background:#220d10;border-color:#e5484d}.p-tile.amber{background:#221a08;border-color:#f2994a}.p-tile.plain{background:var(--pcard);border-color:var(--pline);text-align:left}
+.p-tile b{display:block;font-size:30px;font-weight:700;letter-spacing:0;line-height:1.15}
+.p-tile small{font-size:11.5px;color:#d5e5e8}
+.p-tile em{display:block;font-style:normal;font-size:10.5px;color:var(--pmut)}
+.p-card{background:var(--pcard);border:1px solid var(--pline);border-radius:6px;padding:16px 18px;margin-bottom:14px}
+.p-card.blue{border-left:3px solid #3b82f6}.p-card.orange{border-left:3px solid #f2994a}.p-card.red{border-left:3px solid #e5484d}.p-card.green{border-left:3px solid #2fbf71}
+.p-card h4{font-size:14px;font-weight:600;letter-spacing:0;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.p-card h4 .p-btn{margin-left:auto}
+.p-card p{color:#d5e5e8}
+.p-bd{display:inline-block;font-size:10.5px;font-weight:600;border-radius:4px;padding:1px 7px;margin-top:6px;color:#fff;background:#3b6b75}
+.p-bd.red{background:#e5484d}.p-bd.orange{background:#f2994a}.p-bd.green{background:#2fbf71}.p-bd.blue{background:#3b82f6}
+.p-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+.p-tbl th{text-align:left;color:var(--pmut);font-weight:500;padding:8px 6px;border-bottom:1px solid var(--pline);font-size:11.5px}
+.p-tbl td{padding:8px 6px;border-bottom:1px solid #0e3a44}
+.p-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.p-two>.p-card{margin-bottom:14px}
+.p-btn{border:1px solid #1d4a54;border-radius:6px;padding:4px 10px;font-size:11.5px;color:var(--pcy);background:#05181d;cursor:default}
+.p-donuts{display:flex;gap:28px;flex-wrap:wrap;margin-top:8px}
+.p-donut{text-align:center;font-size:11px;color:var(--pmut)}
+.p-chart{width:100%;height:150px;margin-top:6px}
+.p-leg{display:flex;gap:14px;font-size:11px;color:var(--pmut)}
+.p-qa{background:#05181d;border:1px solid var(--pline);border-radius:8px;padding:12px 14px;margin-top:10px}
+.p-qa .cite{border-color:#1d4a54;color:var(--pcy)}
+.p-ai{position:absolute;right:18px;bottom:18px;width:42px;height:42px;border-radius:10px;background:var(--pcy);display:grid;place-items:center;color:#04161b;box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:default}
+.p-ai:hover::after{content:'Ask an agent in Singularity Chat';position:absolute;right:50px;white-space:nowrap;background:#0a2a33;color:#fff;font-size:11.5px;padding:5px 10px;border-radius:6px;border:1px solid var(--pline)}
+</style>
+</head>
+<body>
+<div class="menubar">
+  <span class="mb-ic" data-app="sing" title="Singularity"><span class="mark-slot" data-s="20"></span></span>
+  <b id="appName">Singularity Chat</b><span>File</span><span>Edit</span><span>View</span><span>Window</span><span>Help</span>
+  <div class="r">
+    <span class="mb-ic" onclick="resetDemo()" title="Reset the demo: buttons, messages, window positions" style="border:1px solid rgba(255,255,255,.35);padding:0 10px">Reset demo</span>
+    <span class="mb-ic" data-app="sing" title="Singularity"><span class="mark-slot" data-s="18" data-c="#fff"></span></span>
+    <span class="mb-ic" data-app="teams" title="Microsoft Teams"><svg width="17" height="16" viewBox="0 0 17 16"><rect x="0" y="2" width="11" height="12" rx="2" fill="#fff"/><path d="M3 5.5h5M5.5 5.5V11" stroke="#1b1b2f" stroke-width="1.6"/><circle cx="13.5" cy="4" r="2.2" fill="#fff"/><path d="M12 7.5h4a1 1 0 0 1 1 1V12a2.5 2.5 0 0 1-5 0z" fill="#fff"/></svg></span>
+    <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><path d="M1 4.2a10 10 0 0 1 14 0M3.4 6.8a6.6 6.6 0 0 1 9.2 0M5.8 9.3a3.2 3.2 0 0 1 4.4 0"/></svg>
+    <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3" fill="none" stroke="#fff" opacity=".5"/><rect x="2" y="2" width="15" height="8" rx="1.6" fill="#fff"/><rect x="22.5" y="4" width="1.5" height="4" rx=".7" fill="#fff" opacity=".5"/></svg>
+    <span>Mon Oct 5&nbsp;&nbsp;9:58 AM</span>
+  </div>
+</div>
+<div class="win" id="win">
+<aside id="side">
+  <div class="lights" data-drag><i style="background:#ff5f57" data-w="close"></i><i style="background:#febc2e" data-w="min"></i><i style="background:#28c840" data-w="max"></i></div>
+  <div class="brand" data-drag><svg class="m40" aria-label="mode40" viewBox="0 0 181 36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M167.351 11.647c0-3.5 1.786-5.833 4.975-5.833 3.189 0 4.974 2.333 4.974 5.833v5.833c0 3.63-1.53 5.834-4.974 5.834s-4.975-2.204-4.975-5.834v-5.833zm-3.954.26v5.444c0 6.222 3.444 9.592 8.801 9.592s8.801-3.37 8.801-9.592v-5.445c0-6.092-3.444-9.592-8.801-9.592s-8.801 3.5-8.801 9.592zm-17.603 6.351h7.781V6.203h-.383l-7.398 12.055zm11.735-15.555v15.555h3.827v3.5h-3.827v4.667h-3.954v-4.667h-11.862v-3.37l9.694-15.556 6.122-.13zm-31.378 13.74c.127-2.333 2.168-4.018 4.464-3.889 2.169-.13 4.082 1.556 4.337 3.76v.13h-8.801zM122.324 18c0 5.185 3.444 8.944 8.419 8.944 3.189.13 5.995-1.555 7.526-4.407l-3.062-1.685a4.297 4.297 0 01-4.337 2.852c-2.551.13-4.592-1.815-4.719-4.408h12.5V17.74c0-5.056-3.189-8.556-8.036-8.556-4.719.13-8.163 3.63-8.291 8.815zm-16.454.13c0 3.5 2.041 5.573 4.974 5.573 2.934 0 4.975-2.074 4.975-5.574s-2.168-5.574-4.975-5.574c-2.806 0-4.974 2.074-4.974 5.574zm13.521 8.296h-3.572v-2.463h-.383c-1.275 1.944-3.444 3.11-5.74 2.981-4.081 0-7.525-3.37-7.525-8.815 0-5.444 3.571-8.814 7.525-8.814 2.296-.13 4.337.907 5.613 2.851h.382V2.704h3.7v23.722zm-32.782-8.297c0-3.37 2.04-5.574 4.975-5.574 2.933 0 4.847 2.074 4.847 5.574s-2.041 5.575-4.847 5.575c-3.062 0-4.975-2.075-4.975-5.575zm-3.7 0c0 4.797 3.828 8.686 8.547 8.686 4.72 0 8.546-3.89 8.546-8.686 0-4.796-3.826-8.685-8.546-8.685-4.72 0-8.546 3.89-8.546 8.685zM59.823 9.832v2.074h.383a4.667 4.667 0 014.465-2.463 4.92 4.92 0 014.72 2.723h.382c.893-1.815 2.806-2.982 4.847-2.723 2.934-.13 5.485 2.204 5.612 5.185v11.926h-3.699V15.666c.128-1.556-1.02-2.852-2.55-3.112h-.511c-2.041 0-3.444 1.426-3.444 3.89v9.98h-3.7V15.537c.128-1.556-.892-2.852-2.423-3.111h-.51c-2.04 0-3.444 1.426-3.444 3.889v9.981h-3.699V9.832h3.572z" fill="#fbfbfb"/><path d="M0 11.777v7.777h1.913v-7.777H0zm21.174 1.944h1.913v3.889h-1.913v-3.89zm-1.913-1.944v7.777H25v-7.777h-5.74zm23.087 0v7.777h1.913v-7.777h-1.913zM0 7.887v1.945h3.827V21.5H0v13.61h9.567v-3.888h7.653v-1.944H7.653v3.888h-5.74v-9.722H5.74V7.888H0zm15.434 0v15.556h5.74V21.5h-3.827V9.832h9.695V21.5h-3.827v1.944h5.74V7.888h-13.52zm25 0h-1.912v15.556h3.826v9.722h-5.74v-3.888h-9.566v1.944h7.653v3.889h9.566V21.499h-3.826V9.832h3.826V7.888h-3.826zM0 .11v5.833h7.653v19.445H3.827v5.833H5.74v-3.889h3.827V4H1.913V2.054h17.348V4h-7.653v23.333h7.653v5.833h-7.653v1.945h9.566v-9.722h-7.653V5.943h7.653V.11H0zm23.087 0v5.833h7.654v19.445h-7.654v9.722h9.567v-1.945h-7.653v-5.833h7.653V4h-7.653V2.054h17.347V4h-7.653v23.333h3.827v3.889h1.913v-5.833h-3.827V5.943h7.654V.11H23.086z" fill="#00d4de"/></svg><small>Singularity Chat</small></div>
+  <div class="search">Search chats</div>
+  <div class="navs"><div class="sec">Direct</div><div id="direct"></div>
+  <div class="sec">Teams</div><div id="teams"></div></div>
+  <div class="foot">
+    <button class="item" onclick="openSettings()"><div class="ag">⚙</div><span class="nm">Settings & connections<span class="sub">Teams connected · Slack off</span></span></button>
+  </div>
+</aside>
+
+<main>
+  <header data-drag>
+    <button id="menu" onclick="side.classList.toggle('open')">☰</button>
+    <div style="min-width:0"><h1 id="title"></h1><div class="meta" id="meta"></div></div>
+    <div class="stack" id="members"></div>
+    <div class="hbtn">
+      <span class="pill hide"><span class="dot"></span>Mirrored to Teams</span>
+      <a class="pill" id="openlink" href="#" onclick="openPlat(C[cur].open);return false">Open in Singularity ↗</a>
+    </div>
+  </header>
+  <div id="feed"><div class="col" id="col"></div></div>
+  <div class="compwrap">
+    <div class="comp">
+      <textarea id="ta" placeholder="Message the agent" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
+      <div class="crow"><span class="chip">＋</span><span class="chip" id="scope">Plant 2</span><button class="send" onclick="send()">↑</button></div>
+    </div>
+    <div class="note">Concept mockup with sample data. Agents act on their own only inside the limits set in Settings.</div>
+  </div>
+</main>
+<div id="modal" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="sheet">
+    <h2>Settings & connections</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:10px">The technical side lives here. Everyone else just chats.</p>
+    <div class="row"><div>Singularity instance<small>Where the data, models, and full screens live</small></div><code>plant2.singularity.app</code></div>
+    <div class="row"><div>Microsoft Teams<small>Every chat here mirrors to a Teams channel or DM</small></div><span class="pill"><span class="dot"></span>Connected</span></div>
+    <div class="row"><div>Slack<small>Same mirror, for Slack shops</small></div><span class="pill">Connect</span></div>
+    <h2 style="margin-top:20px">What agents can do on their own</h2>
+    <div class="row"><div>OEE Watch: stop a machine<small>Only on a repeated safety fault. Everything else asks first.</small></div><span class="pill">Auto + notify</span></div>
+    <div class="row"><div>Planner: move an order<small>Inside the same week, no customer date change</small></div><span class="pill">Asks first</span></div>
+    <div class="row"><div>Auditor: put product on hold<small>Holding is the safe default. Releasing always needs QA.</small></div><span class="pill">Auto + notify</span></div>
+    <div class="row"><div>Auditor: assign a corrective action<small>To the area owner on the record</small></div><span class="pill">Asks first</span></div>
+    <div class="row"><div>Buyer: raise a purchase order<small>Drafts only. Purchasing approves anything over $500.</small></div><span class="pill">Asks first</span></div>
+    <div class="row"><div>Maintenance: open a work order<small>And reserve the part from stock</small></div><span class="pill">Auto + notify</span></div>
+    <div class="row"><div>Knowledge: answer questions<small>From approved SOPs and logged fixes only</small></div><span class="pill">Auto</span></div>
+    <p style="color:var(--muted);font-size:12px;margin-top:12px">Every action, by a person or an agent, lands in the audit trail.</p>
+  </div>
+</div>
+
+</div>
+<div class="win" id="twin"><div class="tm" id="tm"></div></div>
+<div class="win hidden" id="pwin"><div class="pl" id="pl"></div></div>
+<div class="dock">
+  <div class="dk run" data-n="Finder" style="background:linear-gradient(90deg,#1b8cf2 50%,#dff1fd 50%)"><svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="#0d3b66" stroke-width="2" stroke-linecap="round"><path d="M12 11v5M22 11v5M9 23c5 4 11 4 16 0"/></svg></div>
+  <div class="dk" data-n="Safari" style="background:linear-gradient(#fff,#e6e6e6)"><svg width="40" height="40" viewBox="0 0 40 40"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2fc4ff"/><stop offset="1" stop-color="#1767e6"/></linearGradient></defs><circle cx="20" cy="20" r="17" fill="url(#sg)"/><path d="M28 12l-10 6-6 10 10-6z" fill="#fff"/><path d="M28 12l-10 6 4 4z" fill="#ff3b30"/></svg></div>
+  <div class="dk" data-n="Messages" style="background:linear-gradient(#6cf06a,#1fbf2a)"><svg width="34" height="30" viewBox="0 0 34 30"><path d="M17 3C9 3 3 8 3 14c0 3.4 2 6.4 5 8.4-.3 2-1.4 3.8-3 5 3 0 5.6-1 7.4-2.6 1.4.4 3 .6 4.6.6 8 0 14-5 14-11.4S25 3 17 3z" fill="#fff"/></svg></div>
+  <div class="dk" data-n="Mail" style="background:linear-gradient(#5fb8ff,#1a74f0)"><svg width="34" height="26" viewBox="0 0 34 26"><rect x="2" y="2" width="30" height="22" rx="3" fill="#fff"/><path d="M3 4l14 11L31 4" fill="none" stroke="#1a74f0" stroke-width="2"/></svg></div>
+  <div class="dk" data-n="Calendar" style="background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,system-ui,sans-serif"><span style="color:#ff3b30;font-size:10px;font-weight:600;line-height:1">MON</span><span style="color:#222;font-size:28px;font-weight:300;line-height:1.1">5</span></div>
+  <div class="dk" data-n="Notes" style="background:linear-gradient(#ffd84d 0 28%,#fffdf5 28%)"><svg width="34" height="34" viewBox="0 0 34 34" stroke="#d6d0bd" stroke-width="1.4"><path d="M6 18h22M6 23h22M6 28h22"/></svg></div>
+  <div class="dk" data-n="Microsoft Outlook" style="background:linear-gradient(135deg,#28a8ea,#0a5ec2)"><span style="color:#fff;font:700 26px 'Segoe UI',system-ui,sans-serif">O</span></div>
+  <div class="dk run" data-app="teams" data-n="Microsoft Teams" style="background:linear-gradient(135deg,#7b83eb,#4b53bc)"><svg width="36" height="32" viewBox="0 0 17 16"><rect x="0" y="2" width="11" height="12" rx="2" fill="#fff"/><path d="M3 5.5h5M5.5 5.5V11" stroke="#4b53bc" stroke-width="1.6"/><circle cx="13.5" cy="4" r="2.2" fill="#fff"/><path d="M12 7.5h4a1 1 0 0 1 1 1V12a2.5 2.5 0 0 1-5 0z" fill="#fff"/></svg></div>
+  <div class="dk run" data-app="sing" data-n="Singularity Chat" style="background:#0b0b0b;border:1px solid #2a2a2a"><span class="mark-slot" data-s="36"></span></div>
+  <div class="dk" data-app="plat" data-n="The Singularity" style="background:linear-gradient(135deg,#1fb6ee,#0b6fa8)"><span class="mark-slot" data-s="36" data-c="#fff"></span></div>
+  <div class="dk" data-n="System Settings" style="background:linear-gradient(#9a9aa0,#5d5d63)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></div>
+  <div class="dsep"></div>
+  <div class="dk" data-n="Trash" style="background:rgba(255,255,255,.12);box-shadow:none"><svg width="30" height="34" viewBox="0 0 30 34" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"><path d="M4 8h22M11 8V5h8v3M6 8l2 23h14l2-23M12 13v14M18 13v14"/></svg></div>
+</div>
+
+<script>
+// ponytail: all sample data, one file, no backend. Replies are canned.
+// Story: Plant 2 (bottled beverages, 3 lines). One week, Tue Sep 29 to today, Mon Oct 5.
+// Every agent behaviour maps to a shipped Singularity capability (MODULE-EVIDENCE.md).
+const P = {
+  me:{n:'You',r:'Operations manager',c:'#ddd'},
+  dana:{n:'Dana K.',r:'Plant manager',c:'#f5a524'}, raj:{n:'Raj P.',r:'Production planner',c:'#7cc4ff'},
+  lee:{n:'Lee M.',r:'Scheduler',c:'#c9a7ff'}, sam:{n:'Sam T.',r:'Maintenance lead',c:'#3ecf8e'},
+  ana:{n:'Ana R.',r:'QA manager',c:'#ff8fb1'}, tom:{n:'Tom B.',r:'Line 3 lead',c:'#ffd27c'},
+  mia:{n:'Mia L.',r:'Warehouse lead',c:'#9be7e0'}, ben:{n:'Ben S.',r:'Purchasing',c:'#b8e07c'},
+  nat:{n:'Nat O.',r:'Operator, week 2',c:'#e0a87c'}, kim:{n:'Kim W.',r:'Night shift lead',c:'#a8b4ff'},
+  gm:{n:'Greg H.',r:'GM, all plants',c:'#f0f0a0'}
+};
+const AG = {Knowledge:'K',Planner:'P',Auditor:'A',Maintenance:'M',Buyer:'B','OEE Watch':'O'};
+const ini = n => n.split(' ').map(w=>w[0]).join('').slice(0,2);
+const hu = (k,s) => `<div class="hu" style="background:${P[k].c}${s?';width:22px;height:22px;font-size:9px':''}">${ini(P[k].n)}</div>`;
+const agv = (n,s) => `<div class="ag"${s?' style="width:22px;height:22px;font-size:10px"':''}>${AG[n]||n[0]}</div>`;
+const spark = pts => { const mx=Math.max(...pts),mn=Math.min(...pts),w=300,h=56;
+  const d=pts.map((v,i)=>`${(i/(pts.length-1)*w).toFixed(1)},${(h-4-(v-mn)/(mx-mn||1)*(h-8)).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${d}" fill="none" stroke="#fff" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`};
+const cite = (...a) => a.map(x=>`<span class="cite">${x}</span>`).join('');
+
+const C = {
+// ---------------- DIRECT ----------------
+knowledge:{kind:'d',name:'Knowledge',sub:'Ask how anything is done here',meta:'1:1 · answers only from your SOPs, logs, videos, and past fixes',open:'Knowledge Library',
+ reply:'I found two approved sources on that. Here is the short version, with the SOP linked. Want the video clip too?',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'u',x:'What torque should the cappers run at for the new 1 L sport cap?'},
+  {t:'a',x:`<p>18 to 22 in-lb, target 20. The sport cap is softer than the flat cap, so anything over 22 starts cracking the spout.</p>`+cite('Spec sheet CapCo SC-38','SOP-131 rev 2'),conf:'High confidence'},
+  {t:'u',x:'Why did we change it from 24?'},
+  {t:'a',x:`<p>A customer complaint in May. Hartwell found cracked spouts in two lots. The RCA traced it to over-torque, and Ana changed the spec on May 22.</p>`+cite('RCA case 2205-04','Spec change log')},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'sys',x:'Nat O. (operator, week 2) was added to Line 2. Knowledge sent them a starter pack: 6 SOPs, 3 videos, who to ask.'},
+  {t:'u',x:'Nat keeps asking me where the CIP chemicals go. Is there a clean answer I can send?'},
+  {t:'a',x:`<p>Yes. Chemical room B, left wall. Caustic in the blue drums, acid in the white. Never stage them on the same pallet. There is a 90 second video Sam recorded in June.</p>`,files:[['CIP chemical storage, 1:32','VIDEO'],['SOP-087 CIP prep','PDF']]},
+  {t:'u',x:'Perfect. Can it answer Nat directly next time?'},
+  {t:'a',x:`<p>It already can. Nat has a Knowledge chat of their own, scoped to Line 2 and general safety. They asked me 11 questions yesterday. The top three were CIP, label changeover, and where to log a jam.</p>`},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'u',x:'How do we change Line 2 over from 500 ml to 1 L?'},
+  {t:'a',x:`<p>Six steps. The two people usually miss are 3 and 5.</p><ol><li>Run out the 500 ml caps and clear the hopper.</li><li>Swap the star wheels (blue set, rack B4).</li><li>Reset filler volume in recipe <b>L2-1000</b>, not by hand.</li><li>Move guide rails to the 1 L marks.</li><li>Run 20 test bottles and weigh 5. Spec is 1,002 to 1,012 g.</li><li>QA sign off in the release log before you go to speed.</li></ol>`+cite('SOP-114 rev 6','Changeover log, Sep 29','Video: star wheel swap, 2:14')},
+  {t:'u',x:'Who signed off last time and how long did it take?'},
+  {t:'a',x:`<p>Ana R. signed off on Sep 29. The changeover took 42 minutes. Your best this quarter is 31 minutes, on night shift, when the star wheels were staged before the run ended.</p>`},
+  {t:'u',x:'Can you put the staging step on the Line 2 operator screen?'},
+  {t:'a',x:`<p>I drafted it as a checklist item on the Line 2 changeover screen: "Stage blue star wheels at B4 before last 500 ml pallet." Tom owns that screen, so it needs his OK.</p>`,
+   alert:{lvl:'',ti:'Add a step to the Line 2 changeover screen?',b:'Sent to Tom B. for approval. It goes live on the screen the moment he says yes.',kv:[['Screen','Line 2 changeover'],['Owner','Tom B.']],a:[['Approve','pri','Live on the Line 2 screen.'],['Edit wording','','Opened the draft for edits.']],done:0,by:'tom'}},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'sys',x:'Knowledge learned something new. Tom B. logged a fix for Capper 2 jams (worn chuck insert). Ana R. approved it for the library.'},
+  {t:'u',x:'What is the fix for Capper 2 jamming?'},
+  {t:'a',x:`<p>New as of today. If jams cluster on the same head, check the chuck insert on that head first. Tom found a worn insert on head 4 on Thursday. Swapping it took 12 minutes and jams dropped from 5 an hour to zero.</p>`+cite('Fix note, Tom B., Oct 1','Approved by Ana R.')},
+  {t:'day',x:'Today'},
+  {t:'u',x:'What do we do if the metal detector fails its start-up test?'},
+  {t:'a',x:`<p>Do not run. Hold everything made since the last good check, call QA, and log it on the CCP form. The full steps are in SOP-042.</p>`+cite('SOP-042 rev 9','Food safety plan 4.2'),conf:'High confidence'},
+  {t:'u',x:'What did the old owner of this plant use for pallet wrap tension?'},
+  {t:'a',x:`<p>I do not have an approved answer for that. Nothing in the library covers the old wrapper settings, and I will not guess.</p><p>Mia L. set up the current wrapper in 2024. Want me to ask her and add her answer to the library once she confirms it?</p>`,conf:'No approved source'}
+ ]},
+
+planner:{kind:'d',name:'Planner',sub:'Your plan, your orders',meta:'1:1 · checks the schedule every 30 minutes, flags risk early',badge:1,open:'Production plan',
+ reply:'Done. I updated the proposal and told Lee. I will flag it if anything downstream moves.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'6:45',x:`<p>Morning. Week view first. 41 orders, 3 lines, two changeovers I would move.</p>`,
+   table:{ti:'Changeover sequence, this week',cols:['Option','Changeovers','Line time lost','Customer dates'],rows:[['Current plan','9','6.8 h','All met'],['Grouped by bottle size','6','4.7 h','All met'],['Grouped + night shift CIP','6','3.9 h','All met']],pick:2}},
+  {t:'u',x:'Do the third one.'},
+  {t:'a',x:`<p>Proposed. Lee approves sequence changes, so it is in Lee's queue. I will tell you when it lands.</p>`},
+  {t:'sys',x:'Lee M. approved the new sequence at 7:12. 2.9 hours of line time back this week.'},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'a',tm:'6:45',x:`<p>Two things today.</p><ul><li>Resin from Polychem is a day late. Order 4462 is fine, the buffer covers it.</li><li>Line 1 ran 6% over plan yesterday. Good shift for Kim's crew.</li></ul>`},
+  {t:'u',x:'What happens if Hartwell doubles their October order?'},
+  {t:'a',x:`<p>I ran it as a what-if. Short answer: you can do it, but not without Saturday shifts or pushing Northline.</p>`,
+   table:{ti:'What-if: Hartwell October x2',cols:['Scenario','Line 1 load','Late orders','Extra cost'],rows:[['As planned','86%','0','none'],['Hartwell x2, no change','112%','4','none'],['Hartwell x2 + 2 Saturdays','97%','0','2 shifts OT'],['Hartwell x2, push Northline 3 days','99%','0','Northline OK per contract']]},link:'What-if scenario'},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'a',tm:'14:10',x:`<p>Hartwell just sent a rush order through the ERP. 12,000 units of 1 L citrus, wanted Thursday next week.</p>`,
+   alert:{lvl:'warn',ti:'Slot the Hartwell rush order Thursday?',b:'It fits on Line 2 Thursday if 4475 moves to Friday. 4475 is a stock order with no customer date.',kv:[['Moves','4475, Thu to Fri'],['Customer impact','None'],['Changeovers added','0']],a:[['Slot it','pri','Slotted. 4475 is now Friday and Lee has the update.'],['Find another slot','','Next option is Line 3 Wednesday, with one extra changeover.']],done:0,by:'me'}},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'a',tm:'15:30',x:`<p>Week recap.</p>`,dash:{k:[['Schedule attainment','94%','+3','up'],['Orders on time','40 / 41',''],['Changeover time','3.6 h','-2.9','up']],s:[90,92,91,94,95,94]},
+   x2:`<p>The one late order was Northline 4458, half a day, caused by the Line 3 jam on Wednesday. Northline was told by Raj on Wednesday.</p>`},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'6:45',x:`<p>Morning. Three things for your day.</p><ul><li>Order 4471 is at risk for Wednesday. Resin is short by 1.2 t.</li><li>Line 3 is running 9% under plan since 4 am.</li><li>Hartwell's rush order is locked for Thursday.</li></ul>`},
+  {t:'dash',ti:'This week, Plant 2',k:[['Schedule attainment','91%','-3','down'],['Orders on time','38 / 41',''],['Open changeovers','6','']],s:[94,95,93,96,92,90,91]},
+  {t:'a',tm:'6:47',alert:{lvl:'warn',ti:'Move Order 4471 to Thursday?',b:'Resin for 4471 lands Wednesday at 4 pm. If we keep it on Wednesday, Line 1 sits idle for about 5 hours. Thursday still makes the customer date.',
+    kv:[['Customer date','Fri, Oct 9'],['Idle time saved','~5 h'],['Who it affects','Lee M. (scheduling), Line 1 crew']],
+    a:[['Move it','pri','Moved 4471 to Thursday. Lee has the new sequence.'],['Keep Wednesday','','Kept on Wednesday. I will watch the resin truck and ping you at 2 pm.'],['Show options','','Option 3: split the run. 60% Wednesday, 40% Thursday. Want that instead?']]}},
+  {t:'a',tm:'9:50',x:`<p>Heads up. OEE Watch stopped Filler 3 at 9:42. If it is down more than 3 hours, Line 3 misses two orders today. I am drafting a replan now and will post it in Production planning.</p>`}
+ ]},
+
+auditor:{kind:'d',name:'Auditor',sub:'Records, gaps, audit prep',meta:'1:1 · sweeps quality records every 15 minutes',open:'Quality records',
+ reply:'Pulled. The full record pack will be ready in about two minutes.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'10:15',x:`<p>Fill weight on Line 2 has crept up. Eight checks in a row above the average. Nothing is out of spec yet, but it is drifting.</p>`,dash:{k:[['Last 8 checks avg','1,009 g',''],['Spec','1,002 to 1,012 g',''],['Giveaway, per shift','~$310','']],s:[1005,1006,1005,1007,1007,1008,1008,1009,1009,1010]},
+   alert:{lvl:'warn',ti:'Ask the Line 2 lead to reset fill volume?',b:'Recipe L2-1000 shows a manual override from Sunday night. Resetting to the recipe should bring it back to 1,007 g.',kv:[['Probable cause','Manual override, Sun 23:10'],['Who','Kim W. night crew']],a:[['Send to Line 2','pri','Sent to the Line 2 lead with the chart attached.'],['Watch it','','Watching. I will flag again if it crosses 1,011 g.']],done:0,by:'ana'}},
+  {t:'sys',x:'Line 2 reset to recipe at 10:41. Fill weight back to 1,007 g by 11:00.'},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'u',x:'How ready are we for the Hartwell audit next week?'},
+  {t:'a',x:`<p>Mostly ready. I ran their checklist from last year against our records.</p>`,table:{ti:'Hartwell audit checklist',cols:['Area','Status'],rows:[['Allergen changeover records','Complete'],['Metal detector CCP logs','2 gaps'],['Pasteurizer charts','Complete, all signed'],['Supplier approvals','1 expiring Oct 15 (Labelcraft)'],['Training records','Complete'],['Recall drill','Due, last one was April']]}},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'a',tm:'13:00',x:`<p>Recall drill done with Mia in Warehouse & shipping. Full trace in 4 minutes. Hartwell's standard is 2 hours, so this one is a strong story for the audit.</p>`,files:[['Recall drill, lot 2409-17','PDF']]},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'u',x:'Remind me where we landed on the Labelcraft approval.'},
+  {t:'a',x:`<p>Ben sent them the renewal form on Wednesday. They have not returned it. It expires Oct 15. I added it to Ben's list and I will flag it Monday if it is still open.</p>`},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'7:30',x:`<p>I checked September against the food safety plan before Thursday's audit. Two gaps left.</p>`,
+   alert:{lvl:'warn',ti:'2 gaps in the September CCP logs',b:'Metal detector checks on Line 2 are missing for Sep 14 night shift. One cooling log on Sep 21 has no sign off.',
+    kv:[['Audit','Thu, Oct 8, Hartwell'],['Area owner','Ana R.'],['Fix time','about 30 min']],
+    a:[['Assign to Ana','pri','Assigned to Ana R. with both records attached. Due Wednesday noon.'],['Show records','','Here are both records. Sep 14 shows the detector passed its start-up test, so the gap is the hourly checks.'],['Accept the gap','','Noted as a known gap. It will show in the audit pack with the reason.']]}},
+  {t:'a',tm:'7:31',x:`<p>Labelcraft still has not returned the renewal. 10 days left. Ben has it.</p>`}
+ ]},
+
+maint:{kind:'d',name:'Maintenance',sub:'Work orders, parts, machine history',meta:'1:1 · reads machine history, PM plans, and the parts room',open:'Maintenance planning',
+ reply:'Got it. I opened the work order and reserved the part.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'7:00',x:`<p>PM plan for the week. 14 jobs, 22 hours. I fit all of them into planned downtime. None of them stop a line during a run.</p>`,link:'PM schedule'},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'u',x:'Who has the big torque wrench? It is not on the board.'},
+  {t:'a',x:`<p>Checked out to Kim W. on Monday night, due back Tuesday. It is a day overdue. Want me to ask Kim?</p>`},
+  {t:'u',x:'Yes.'},
+  {t:'sys',x:'Kim W. replied from Teams: "In my locker, dropping it at the crib now." Checked back in at 6:20.'},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'u',x:'How often has Capper 2 jammed this month?'},
+  {t:'a',x:`<p>61 jams in September. 44 of them on head 4. That is not random. The last time one head took most of the jams (March, Capper 1), it was a worn chuck insert.</p>`,dash:{k:[['Jams, Sept','61',''],['On head 4','44',''],['Downtime','5.1 h','']],s:[1,2,1,3,2,4,3,5,4,6]}},
+  {t:'sys',x:'Tom B. swapped the head 4 chuck insert at 15:20. Fix logged and sent to Knowledge for approval.'},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'a',tm:'14:00',x:`<p>Two parts are below minimum after this week. I drafted the requisition. Purchasing approves anything over $500.</p>`,table:{ti:'Parts below minimum',cols:['Part','On hand','Min','Cost'],rows:[['Chuck insert, capper','1','4','$380'],['Filler torque head','1','2','$2,140']]},
+   alert:{lvl:'',ti:'Send the requisition to Ben?',b:'Total $2,520. The torque head is a 3 week lead time, so this one matters.',kv:[['Supplier','OEM parts, approved'],['Lead time','3 weeks']],a:[['Send to Ben','pri','Sent. Ben approved it Friday at 16:05. PO 7731.'],['Hold','','Held. I will ask again Monday.']],done:0,by:'me'}},
+  {t:'day',x:'Today'},
+  {t:'u',x:'Do we have a spare torque head for Filler 3?'},
+  {t:'a',x:`<p>One, in the parts room, bin C-12. The head on Filler 3 has run 1,900 hours. The last two drifted at 1,800 to 2,000 hours, which lines up with what OEE Watch saw this morning. The second spare from PO 7731 lands Oct 23.</p>`+cite('Parts room count, Oct 5','Asset history, Filler 3','PO 7731')},
+  {t:'u',x:'Open a work order for Sam.'},
+  {t:'a',x:`<p>Work order WO-2304 is open, assigned to Sam T., spare head reserved. I attached the torque trace and the last two swap notes.</p>`,files:[['WO-2304','WORK ORDER'],['Torque trace, Filler 3','PDF']]}
+ ]},
+
+buyer:{kind:'d',name:'Buyer',sub:'Materials, suppliers, POs',meta:'1:1 · watches material needs against the plan and supplier history',open:'Materials planning',
+ reply:'Drafted. Nothing goes to the supplier until you or Ben send it.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'8:00',x:`<p>Material check for the next 3 weeks against the plan. Everything is covered except resin and one label.</p>`,table:{ti:'Projected short',cols:['Material','Short on','Short by','Fix'],rows:[['PET resin','Wed, Oct 7','1.2 t','Expedite Polychem PO 7702'],['Citrus 1 L label','Mon, Oct 12','8,000','New PO, Labelcraft']]},link:'Projected on hand'},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'a',tm:'11:20',x:`<p>Polychem just pushed their delivery a day. That is the third late delivery in five. All three were Monday trucks.</p>`,dash:{k:[['On time, last 5','2 / 5',''],['Avg days late','1.3',''],['Plant impact','~7 h idle','']],s:[100,100,80,60,40]}},
+  {t:'u',x:'Draft something to Polychem about the Monday trucks.'},
+  {t:'a',x:`<p>Drafted for Ben to send. It asks Polychem to move our deliveries to Thursday and lists the three late dates. Plain, no blame.</p>`,files:[['Draft: Polychem delivery day','EMAIL DRAFT']],
+   alert:{lvl:'',ti:'Send to Ben for review?',b:'Ben owns the Polychem relationship. He sends it, not me.',kv:[['To','Ben S.'],['Attached','Late delivery log']],a:[['Send to Ben','pri','In Ben\'s queue.'],['Edit first','','Opened the draft.']],done:0,by:'me'}},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'u',x:'If Hartwell doubles their October order, what do we need to buy?'},
+  {t:'a',x:`<p>Same what-if Planner ran yesterday. You would need 3.4 t more resin, 120k caps, and 96k labels. Caps are the tight one, CapCo is at 4 weeks lead time right now.</p>`},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'sys',x:'Polychem agreed to Thursday deliveries starting Oct 15 (Ben S., via email).'},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'7:05',x:`<p>Resin for 4471 is still 1.2 t short for Wednesday. Polychem's truck is booked for 4 pm Wednesday. Planner has the options in your 1:1.</p>`},
+  {t:'a',tm:'7:06',alert:{lvl:'warn',ti:'Order the citrus labels today?',b:'Labelcraft needs 5 business days. Ordering today covers the Oct 12 run. Waiting until tomorrow cuts it to one day of buffer.',kv:[['Qty','40,000'],['Cost','$3,180'],['Note','Labelcraft approval expires Oct 15']],
+    a:[['Raise PO','pri','PO 7738 raised and sent to Ben for approval.'],['Wait a day','','Holding. I will ask again tomorrow at 7.']]}}
+ ]},
+
+// ---------------- TEAMS ----------------
+oee:{kind:'t',name:'OEE · Line 3',sub:'OEE Watch · live',meta:'Team · OEE Watch + 4 people · mirrored to Teams',who:['tom','sam','dana','kim'],badge:2,alert:true,agent:'OEE Watch',open:'Line 3 OEE',
+ reply:'Logged. I will keep watching Filler 3 and post here if the torque drifts again.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'16:00',tag:'Shift summary',x:`<p>Day shift: 79% OEE. Plan was 80%. Capper 2 jammed 9 times, 48 minutes total.</p>`,dash:{k:[['OEE','79%','-1','down'],['Availability','86%',''],['Performance','93%',''],['Quality','98.9%','']],s:[78,80,81,79,80,79]}},
+  {t:'h',w:'tom',x:'Capper 2 has been like this since the weekend. Mostly head 4 I think.'},
+  {t:'a',x:`<p>You are right. 7 of the 9 jams today were head 4.</p>`},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'a',tm:'10:22',x:`<p>Capper 2 jammed 6 times in the last hour. Line 3 is 40 minutes behind. Northline 4458 will slip about half a day.</p>`},
+  {t:'h',w:'dana',via:'Teams',x:'Raj, can you give Northline a heads up?'},
+  {t:'h',w:'raj',x:'Done, they are fine with Thursday morning.'},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'h',w:'tom',x:'Swapped the chuck insert on head 4. Old one was worn smooth. Let us see.'},
+  {t:'a',tm:'17:00',x:`<p>Since the swap: zero jams in 1 hour 40 minutes. Before the swap it was 5 an hour. I asked Tom to log the fix so Knowledge can share it with the other lines.</p>`},
+  {t:'day',x:'Sat, Oct 3'},
+  {t:'a',tm:'22:00',tag:'Weekend summary',x:`<p>Quiet weekend. 84% OEE on the Saturday run. One 12 minute stop for a label roll change.</p>`},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'9:00',tag:'Routine · every hour',x:`<p>Line 3 is at 71% this hour. Plan is 80%. Most of the loss is Capper 2 again, and the Filler 3 torque is drifting.</p>`,
+   dash:{k:[['OEE','71%','-9','down'],['Availability','84%',''],['Performance','88%',''],['Quality','96%','']],s:[82,81,80,79,77,74,71]}},
+  {t:'a',tm:'9:42',tag:'Auto action',alert:{lvl:'bad',ti:'I stopped Filler 3',b:'Torque spiked above the limit three times in four minutes. Your rules let me stop it for a repeated fault like this. Nothing is damaged that I can see.',
+    kv:[['Fault','Torque 38% over limit, 3 times'],['Product held','~1,200 units'],['Likely cause','Torque head wear (1,900 h)'],['Spare part','In stock, bin C-12']],
+    a:[['Keep it down','pri','Filler 3 stays down. Work order WO-2304 is open for Sam, part reserved.'],['Restart it','danger','Restarting needs a second person. Tom, please confirm on the HMI.'],['Show details','','Torque trace for the last 30 minutes is attached, with the three spikes marked.']]},
+   files:[['Torque trace, 9:12 to 9:42','PDF']]},
+  {t:'sys',x:'OEE Watch told Planner: Filler 3 down, likely 2 to 3 hours. Planner is replanning Line 3.'},
+  {t:'sys',x:'Auditor put the 1,200 held units on QA hold pending a check. Ana R. notified.'},
+  {t:'a',tm:'9:55',alert:{lvl:'warn',ti:'Stop Capper 2?',b:'Jam rate is 4 an hour and climbing. This time it is head 2, not head 4. I can stop it, but this one is your call.',
+    kv:[['Jams, last hour','4'],['Units lost so far','~600'],['If it keeps going','~2,500 units by end of shift'],['Known fix','Chuck insert swap, 12 min (Tom, Oct 1)']],
+    a:[['Stop it','danger','Capper 2 stopped at your call. Logged with your name.'],['Keep running','pri','Keeping Capper 2 running. I will check again in 15 minutes.'],['Send Sam to look','','Sam has the request with the jam log attached.']]}},
+  {t:'h',w:'sam',x:'On my way to Filler 3. Leave Capper 2 running, I will swap the insert on head 2 after. Spare is in my cart.'}
+ ]},
+
+planning:{kind:'t',name:'Production planning',sub:'Planner · daily plan at 7:00',meta:'Team · Planner + 4 people · mirrored to Teams',who:['dana','raj','lee','me'],badge:3,agent:'Planner',open:'Production plan',
+ reply:'Thanks. I added that to tomorrow\'s plan and will post the change here at 7.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'7:00',tag:'Routine · weekdays 7:00',x:`<p><b>Daily plan.</b> 15 orders. New changeover sequence from Lee saves 2.9 hours this week.</p>`},
+  {t:'h',w:'lee',x:'Nice, that is the first week we do not need a Saturday.'},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'a',tm:'7:00',tag:'Routine · weekdays 7:00',x:`<p><b>Daily plan.</b> 14 orders. Polychem is a day late, buffer covers 4462.</p>`},
+  {t:'a',tm:'10:30',x:`<p>Capper 2 jams put Northline 4458 half a day behind. I can pull 4460 forward to keep Line 3 busy while maintenance looks.</p>`,
+   alert:{lvl:'warn',ti:'Pull 4460 forward?',b:'Keeps Line 3 running. No customer impact.',kv:[['Moves','4460, Thu to Wed'],['Customer impact','None']],a:[['Do it','pri','Done. 4460 is on Line 3 now.'],['Leave it','','Left as is.']],done:0,by:'raj'}},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'a',tm:'7:00',tag:'Routine · weekdays 7:00',x:`<p><b>Daily plan.</b> 13 orders.</p>`},
+  {t:'h',w:'dana',x:'Can we get the forecast to assume Hartwell stays at last year\'s Q4 pace?'},
+  {t:'a',x:`<p>Added as a forecast rule: "Hartwell Q4 = last year's Q4 by SKU, plus 10%." It conflicts with Raj's rule from August (flat +5%). Which one wins?</p>`,
+   alert:{lvl:'',ti:'Two rules for Hartwell Q4',b:'They cannot both apply.',kv:[['Rule 1 (Raj, Aug)','Flat +5%'],['Rule 2 (Dana, today)','Last year by SKU, +10%']],a:[['Use Dana\'s','pri','Rule 2 is live. Raj\'s rule is archived, not deleted.'],['Use Raj\'s','','Kept Rule 1.']],done:0,by:'raj'}},
+  {t:'a',tm:'14:12',x:`<p>Hartwell rush order is slotted on Line 2 Thursday next week. 4475 moved to Friday. No customer impact.</p>`},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'a',tm:'15:30',tag:'Routine · Fridays',x:`<p><b>Next week.</b> Heavy Wednesday, resin is the risk. I will check Polychem's truck status Monday at 6 am and flag here.</p>`,
+   dash:{k:[['Orders next week','43',''],['Line load','91%',''],['Material risks','1','']],s:[84,88,86,91,93,91]}},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'7:00',tag:'Routine · weekdays 7:00',x:`<p><b>Daily plan.</b> 14 orders across 3 lines. One risk, one change.</p>`,
+   dash:{k:[['Planned output','182k units',''],['Line uptime, yesterday','88%','+2','up'],['Risk','Order 4471','']],s:[80,84,83,86,85,88,88]},
+   th:[['dana','Why is 4471 a risk again? Second time this month.'],['@Planner','Resin. Same supplier, same late truck. Both misses were Polychem, both on a Monday delivery. Thursday deliveries start Oct 15.'],['raj','OK. Let us get through this week.']]},
+  {t:'a',tm:'7:05',alert:{lvl:'warn',ti:'Pick one: resin shortfall on Wednesday',b:'Two ways to cover it. I need one of you to choose by 11 am so Lee can resequence.',
+    kv:[['Option 1','Pull order 4480 forward, run 4471 Thursday'],['Option 2','Split 4471 across Wed and Thu'],['Default','Option 1 at 11 am if nobody picks']],
+    a:[['Option 1','pri','Option 1 chosen. Lee, the new sequence is in your queue.'],['Option 2','','Option 2 chosen. Lee, both halves are in your queue.'],['Talk it through','','Opened a thread. Dana and Raj, here are the costs side by side.']]}},
+  {t:'h',w:'lee',x:'I can do either. Option 1 is easier on the crew.'},
+  {t:'a',tm:'9:58',x:`<p>Filler 3 is down (OEE Watch, 9:42). Replan for Line 3, assuming 3 hours down:</p>`,
+   table:{ti:'Line 3 replan',cols:['Order','Was','Now','Customer date'],rows:[['4477','Today 10:00','Today 13:00','Wed, OK'],['4479','Today 14:00','Line 1, 16:00','Thu, OK'],['4481','Tue','Tue','OK']]},
+   alert:{lvl:'warn',ti:'Commit the Line 3 replan?',b:'Nothing misses a customer date. 4479 moves to Line 1, which has a gap after 4 pm.',kv:[['Orders moved','2'],['Late orders','0']],a:[['Commit','pri','Committed. Line leads have the new plan on their screens.'],['Wait for Sam','','Holding until Sam has an estimate.']]}}
+ ]},
+
+quality:{kind:'t',name:'Quality & food safety',sub:'Auditor · 15 minute sweeps',meta:'Team · Auditor + 4 people · mirrored to Teams',who:['ana','dana','tom','nat'],badge:1,agent:'Auditor',open:'Quality',
+ reply:'Added. I will include it in the Friday summary.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'10:15',x:`<p>Line 2 fill weight is drifting up. Eight checks in a row above average, still in spec. Probable cause is a manual override Sunday night. Ana sent it to the line lead.</p>`},
+  {t:'h',w:'ana',x:'Fixed by 10:41. Thanks for catching it early, that is about $300 a shift in giveaway.'},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'a',tm:'6:00',tag:'Pre-op check',x:`<p>Line 2 pre-op check, filled by Nat O. in chat.</p>`,
+   form:{ti:'Line 2 pre-op checklist',f:[['Metal detector start-up test','Pass','ok'],['Allergen clean verified','Yes','ok'],['Label matches order 4462','Yes','ok'],['Foreign material check','Pass','ok'],['Signed','Nat O., 5:58','']],a:[['Accept','pri','Accepted and filed to the CCP record.']],done:0,by:'ana'}},
+  {t:'h',w:'nat',x:'Way easier than the clipboard.'},
+  {t:'a',tm:'14:00',x:`<p>Two scheduled checks are overdue on Line 1: hourly seal check at 13:00 and the 13:30 torque check.</p>`},
+  {t:'h',w:'tom',via:'Teams',x:'Covering Line 1 too today, doing them now.'},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'a',tm:'11:00',x:`<p>Mock recall with Warehouse: lot 2409-17 traced to 3 customers and 2 raw material lots in 4 minutes. Report is in the audit pack.</p>`},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'a',tm:'15:00',tag:'Routine · Fridays 3:00',x:`<p><b>Weekly quality summary.</b> Good week. Holds are down, one open corrective action.</p>`,
+   dash:{k:[['First pass yield','97.8%','+0.6','up'],['Holds','2','-3','up'],['Open CAPAs','1',''],['Checks on time','98%','']],s:[96.4,96.9,97.1,97.0,97.5,97.8]},
+   th:[['ana','The open one is the label smudge on Line 1. Labelcraft is sending new rolls Monday.'],['@Auditor','Noted. I will close it when the first lot on the new rolls passes.']]},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'9:44',x:`<p>OEE Watch stopped Filler 3 at 9:42. I placed the last 1,200 units on hold until someone checks fill and seal. Holding first is the default in your food safety plan.</p>`,
+   alert:{lvl:'warn',ti:'Release or keep the 1,200 units on hold?',b:'Torque spikes can mean loose caps. A 20 bottle seal check would clear it.',kv:[['Units','1,200, lot 2510-05A'],['Check needed','20 bottle seal and torque'],['Owner','Ana R.']],
+    a:[['Keep on hold','pri','Kept on hold. Ana has the check request.'],['Release now','danger','Release needs QA sign off. Sent to Ana.']]}},
+  {t:'a',tm:'9:46',x:`<p>I opened an investigation for the Filler 3 stop and pre-filled what I could. Tom and Sam can add to it.</p>`,
+   table:{ti:'Case RC-2510-02, first draft',cols:['Cause area','What I found'],rows:[['Machine','Torque head at 1,900 h; last two failed at 1,800 to 2,000 h'],['Method','No PM task for torque head hours'],['Material','Nothing unusual'],['People','Nothing unusual']]},link:'Investigation RC-2510-02'},
+  {t:'h',w:'ana',x:'Good start. Add a countermeasure: PM task at 1,600 hours for every filler torque head.'},
+  {t:'a',x:`<p>Added as a countermeasure, owner Sam T. Maintenance will see it in the PM plan.</p>`}
+ ]},
+
+maintteam:{kind:'t',name:'Maintenance & reliability',sub:'Maintenance · PM plan + work orders',meta:'Team · Maintenance + 3 people',who:['sam','tom','kim'],agent:'Maintenance',open:'Maintenance planning',
+ reply:'Logged to the work order.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'7:00',tag:'Routine · Tuesdays',x:`<p><b>PM plan this week.</b> 14 jobs, 22 hours, all in planned downtime.</p>`,table:{ti:'',cols:['Day','Jobs','Hours','Lines'],rows:[['Tue','3','4.5','L1'],['Wed','2','3','L3'],['Thu night','5','8','L1, L2'],['Sat','4','6.5','L3']]}},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'h',w:'tom',x:'Head 4 chuck insert was worn smooth. Swapped. Logging the fix.'},
+  {t:'a',x:`<p>Thanks Tom. Fix sent to Ana for the library. Capper 1 and Capper 3 run the same inserts, so I added an insert check to both of their next PMs.</p>`},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'sys',x:'PO 7731 approved by Ben S.: chuck inserts and a filler torque head. Lands Oct 23.'},
+  {t:'day',x:'Sat, Oct 3'},
+  {t:'h',w:'kim',x:'Saturday PMs on Line 3 done. Found a cracked guide rail bracket, swapped it.'},
+  {t:'a',x:`<p>Logged to the Line 3 asset history. That is the second bracket this year on that rail. If it happens again I will flag it as a pattern.</p>`},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'9:43',x:`<p>Work order WO-2304 for Filler 3. Spare head reserved, bin C-12. Last swap took 1 h 50 min.</p>`,files:[['WO-2304','WORK ORDER'],['Torque head swap procedure','VIDEO']]},
+  {t:'h',w:'sam',x:'On it. Should be about 2 hours.'},
+  {t:'a',x:`<p>Told Planner: 2 hours. Planner's replan assumed 3, so Line 3 gets an hour back.</p>`}
+ ]},
+
+warehouse:{kind:'t',name:'Warehouse & shipping',sub:'Planner + Auditor · docks and trace',meta:'Team · 2 agents + 3 people · mirrored to Teams',who:['mia','ben','dana'],agent:'Planner',open:'Warehouse',
+ reply:'Updated the dock schedule.',
+ m:[
+  {t:'day',x:'Tue, Sep 29'},
+  {t:'a',tm:'9:15',x:`<p>Sales order 88213 from Northline did not come across from the ERP. The unit of measure is "CS24" and we only know "CS". It is not in our plan yet.</p>`,
+   alert:{lvl:'warn',ti:'Map CS24 to a 24-count case?',b:'Same as CS with a count of 24. Mapping it fixes this order and any future ones.',kv:[['Order','88213, Northline'],['Qty','1,400 cases']],a:[['Map it','pri','Mapped. Order 88213 is now in the plan for Oct 9.'],['Ask IT','','Sent to IT with the error.']],done:0,by:'mia'}},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'a',tm:'6:30',tag:'Routine · weekdays 6:30',x:`<p><b>Docks today.</b> 6 outbound, 3 inbound. Polychem moved to tomorrow.</p>`},
+  {t:'day',x:'Thu, Oct 1'},
+  {t:'a',ag:'Auditor',tm:'10:56',x:`<p>Mock recall drill. Customer complaint on lot 2409-17. Here is the full trace.</p>`,
+   table:{ti:'Lot 2409-17, 1 L citrus',cols:['Direction','Where it went'],rows:[['Back','Resin lot PC-0913 (Polychem), labels LC-2288, caps CC-771'],['Made','Line 2, Sep 17, night shift'],['Forward','Hartwell DC Winnipeg (640 cs), Northline (300 cs), on hand (60 cs)']]},files:[['Recall drill, lot 2409-17','PDF']]},
+  {t:'h',w:'mia',x:'4 minutes. Last time on paper it took us most of a day.'},
+  {t:'day',x:'Fri, Oct 2'},
+  {t:'a',tm:'13:00',x:`<p>Projected on hand for 1 L citrus drops below safety stock on Oct 14 if Hartwell's rush order ships as planned. Planner already has a run on Oct 12, so this clears itself.</p>`},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'6:30',tag:'Routine · weekdays 6:30',x:`<p><b>Docks today.</b> 7 outbound, 2 inbound.</p>`,dash:{k:[['Outbound','7',''],['Inbound','2',''],['On QA hold','1,200 units','']],s:[5,6,6,7,6,7]}},
+  {t:'h',w:'mia',x:'Is the held lot going to touch any of today\'s loads?'},
+  {t:'a',ag:'Auditor',x:`<p>No. Lot 2510-05A is not on any load this week. I blocked it from picking until QA releases it.</p>`}
+ ]},
+
+leaders:{kind:'t',name:'Leadership weekly',sub:'Planner + Auditor · Mondays 8:00',meta:'Team · 2 agents + plant leaders',who:['gm','dana','me'],agent:'Planner',open:'Executive dashboard',
+ reply:'I will add that to next Monday.',
+ m:[
+  {t:'day',x:'Mon, Sep 28'},
+  {t:'a',tm:'8:00',tag:'Routine · Mondays 8:00',x:`<p><b>Last week.</b> 92% on time, OEE 80%. The big loss was Capper 2.</p>`},
+  {t:'day',x:'Wed, Sep 30'},
+  {t:'h',w:'gm',x:'Can we take the Hartwell doubling if it comes? Need an answer for their buyer Friday.'},
+  {t:'a',x:`<p>Yes, with two Saturday shifts in October or by pushing Northline 3 days, which their contract allows. Caps are the tightest material (4 week lead). I would lock caps this week if you want to say yes Friday.</p>`,link:'What-if: Hartwell x2'},
+  {t:'h',w:'gm',x:'Lock the caps.'},
+  {t:'sys',x:'Buyer drafted a CapCo PO for 120k caps. Ben S. approved it Thursday.'},
+  {t:'day',x:'Today'},
+  {t:'a',tm:'8:00',tag:'Routine · Mondays 8:00',x:`<p><b>Monday plant summary.</b> Last week in one screen. Full numbers in the Singularity.</p>`,
+   dash:{k:[['On-time delivery','98%','+6','up'],['OEE, all lines','82%','+2','up'],['Safety incidents','0',''],['Downtime hours','9.5','-5','up']],s:[79,80,78,81,80,82]}},
+  {t:'a',ag:'Auditor',tm:'8:01',x:`<p><b>What the agents did last week.</b> Everything is in the audit trail.</p>`,
+   table:{ti:'',cols:['','Count'],rows:[['Acted on their own (inside your limits)','38'],['Asked and someone approved','14'],['Asked and someone said no','3'],['Questions answered by Knowledge','212'],['Answers it refused (no approved source)','6']]}},
+  {t:'h',w:'gm',x:'The 6 refusals, are those gaps we should fill?'},
+  {t:'a',ag:'Auditor',x:`<p>Four of them, yes. Three were about the old wrapper and one about the new pallet label printer. I sent the list to the owners. The other two were off topic.</p>`},
+  {t:'h',w:'dana',x:'Heads up, Filler 3 went down this morning. Covered, no late orders. Details in the Line 3 channel.'}
+ ]}
+};
+
+let cur='oee';
+function navItem(id){const c=C[id];
+  const icon = c.kind==='d' ? agv(c.name) : `<div class="ag" style="background:#1a1a1a;border:1px solid #2a2a2a">#</div>`;
+  const b = c.badge?`<span class="badge ${c.alert?'alert':''}">${c.badge}</span>`:'';
+  return `<button class="item ${id===cur?'on':''}" onclick="go('${id}')">${icon}<span class="nm">${c.name}<span class="sub">${c.sub}</span></span>${b}</button>`}
+function nav(){direct.innerHTML=Object.keys(C).filter(k=>C[k].kind==='d').map(navItem).join('');
+  teams.innerHTML=Object.keys(C).filter(k=>C[k].kind==='t').map(navItem).join('')}
+
+const agentOf = (c,m) => m.ag || (c.kind==='d'?c.name:c.agent);
+function card(o,i,form){
+  const col=o.lvl==='bad'?'var(--bad)':o.lvl==='warn'?'var(--warn)':'#888';
+  const done=o.done!=null;
+  const who=o.by?`${P[o.by].n} picked`:'You picked';
+  return `<div class="card ${o.lvl||''}"><div class="ctitle"><span class="lvl" style="background:${col}"></span>${o.ti}</div>`+
+   (o.b?`<div class="cbody">${o.b}</div>`:'')+
+   (o.kv?`<div class="kv">${o.kv.map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('')}</div>`:'')+
+   (o.f?`<div style="margin-top:8px">${o.f.map(([k,v,s])=>`<div class="fld"><span>${k}</span><b class="${s}">${v}</b></div>`).join('')}</div>`:'')+
+   `<div class="acts">${o.a.map(([l,s],j)=>`<button class="act ${s}" ${done?'disabled':''} onclick="act(${i},'${form?'form':'alert'}',${j})">${l}</button>`).join('')}</div>`+
+   (done?`<div class="resolved">${who} <b style="color:var(--text)">${o.a[o.done][0]}</b>. ${o.a[o.done][2]} Logged to the audit trail.</div>`:'')+`</div>`}
+function dash(ti,k,s){return `<div class="card">${ti?`<div class="ctitle">${ti}</div>`:''}<div class="kpis">${k.map(([l,v,d,dir])=>`<div class="kpi"><small>${l}</small><b>${v}</b>${d?`<i class="${dir||''}">${d}</i>`:''}</div>`).join('')}</div>${spark(s)}</div>`}
+function table(t){return `<div class="card">${t.ti?`<div class="ctitle">${t.ti}</div>`:''}<div class="wrap"><table class="tbl"><tr>${t.cols.map(c=>`<th>${c}</th>`).join('')}</tr>${t.rows.map((r,j)=>`<tr class="${j===t.pick?'pick':''}">${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</table></div></div>`}
+function thread(th,c){return `<div class="thread">${th.map(([w,x])=>w[0]==='@'
+  ?`<div class="msg">${agv(w.slice(1),1)}<div class="body"><div class="who">${w.slice(1)}</div>${x}</div></div>`
+  :`<div class="msg">${hu(w,1)}<div class="body"><div class="who">${P[w].n}</div>${x}</div></div>`).join('')}</div>`}
+function parts(m,i,c){return (m.x||'')+(m.dash?dash(m.dash.ti||m.ti||'',m.dash.k,m.dash.s):'')+(m.k?dash(m.ti,m.k,m.s):'')+(m.table?table(m.table):'')+
+  (m.alert?card(m.alert,i):'')+(m.form?card(m.form,i,1):'')+(m.x2||'')+
+  (m.files?`<div class="files">${m.files.map(([n,t])=>`<span class="file"><i>${t}</i>${n}</span>`).join('')}</div>`:'')+
+  (m.link?`<a class="lnk" href="#" onclick="openPlat('${m.link}');return false">Open ${m.link} in Singularity ↗</a>`:'')+(m.th?thread(m.th,c):'')}
+function render(m,i){const c=C[cur];
+  const head=(av,name,extra)=>`<div class="msg">${av}<div class="body"><div class="who">${name}${extra||''}</div>`;
+  const meta=(m.tm?`<span>${m.tm}</span>`:'')+(m.tag?`<span class="tag">${m.tag}</span>`:'')+(m.conf?`<span class="tag">${m.conf}</span>`:'');
+  switch(m.t){
+   case 'day': return `<div class="day">${m.x}</div>`;
+   case 'sys': return `<div class="sys">${m.x}</div>`;
+   case 'u': return `<div class="u">${m.x}</div>`;
+   case 'h': return head(hu(m.w),P[m.w].n,`<span>${P[m.w].r}</span>${m.via?`<span class="via">via ${m.via}</span>`:''}`)+`<p>${m.x}</p></div></div>`;
+   default: {const n=agentOf(c,m);return head(agv(n),n,meta)+parts(m,i,c)+'</div></div>'}
+  }}
+
+function draw(){const c=C[cur];
+  title.textContent=c.kind==='t'?'# '+c.name:c.name; meta.textContent=c.meta;
+  members.innerHTML=(c.who||[]).map(k=>hu(k)).join('');
+  openlink.textContent=`Open ${c.open} ↗`;
+  ta.placeholder=c.kind==='t'?`Message #${c.name.toLowerCase()} or @${c.agent}`:`Message ${c.name}`;
+  col.innerHTML=c.m.map(render).join(''); feed.scrollTop=feed.scrollHeight; nav()}
+function go(id){cur=id;C[id].badge=0;side.classList.remove('open');draw()}
+function act(i,k,j){C[cur].m[i][k].done=j;C[cur].m[i][k].by=null;const y=feed.scrollTop;draw();feed.scrollTop=y}
+function send(){const v=ta.value.trim();if(!v)return;const c=C[cur];ta.value='';
+  c.m.push({t:'u',x:v.replace(/</g,'&lt;')});draw();
+  col.insertAdjacentHTML('beforeend',`<div class="msg">${agv(c.kind==='d'?c.name:c.agent)}<div class="body typing"><span></span><span></span><span></span></div></div>`);
+  feed.scrollTop=feed.scrollHeight;
+  setTimeout(()=>{c.m.push({t:'a',x:`<p>${c.reply}</p>`});if(C[cur]===c)draw()},900)}
+function openSettings(){modal.classList.add('on');side.classList.remove('open')}
+go(cur);
+
+// ================= Microsoft Teams window =================
+// ponytail: Teams reads the same C object as the Singularity app, so a pick or a message in one window shows in the other.
+const MARK = (s,c='#00d4de') => `<svg viewBox="0 0 45 36" width="${s}" height="${s*36/45}"><path fill="${c}" d="M0 11.777v7.777h1.913v-7.777H0zm21.174 1.944h1.913v3.889h-1.913v-3.89zm-1.913-1.944v7.777H25v-7.777h-5.74zm23.087 0v7.777h1.913v-7.777h-1.913zM0 7.887v1.945h3.827V21.5H0v13.61h9.567v-3.888h7.653v-1.944H7.653v3.888h-5.74v-9.722H5.74V7.888H0zm15.434 0v15.556h5.74V21.5h-3.827V9.832h9.695V21.5h-3.827v1.944h5.74V7.888h-13.52zm25 0h-1.912v15.556h3.826v9.722h-5.74v-3.888h-9.566v1.944h7.653v3.889h9.566V21.499h-3.826V9.832h3.826V7.888h-3.826zM0 .11v5.833h7.653v19.445H3.827v5.833H5.74v-3.889h3.827V4H1.913V2.054h17.348V4h-7.653v23.333h7.653v5.833h-7.653v1.945h9.566v-9.722h-7.653V5.943h7.653V.11H0zm23.087 0v5.833h7.654v19.445h-7.654v9.722h9.567v-1.945h-7.653v-5.833h7.653V4h-7.653V2.054h17.347V4h-7.653v23.333h3.827v3.889h1.913v-5.833h-3.827V5.943h7.654V.11H23.086z"/></svg>`;
+P.priya = {n:'Priya N.',r:'HR',c:'#ffc4a8'};
+const ICON = {
+ bell:'<path d="M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15L6 16zM10 20a2 2 0 0 0 4 0"/>',
+ chat:'<path d="M4 5h16v11H9l-5 4V5z"/>',
+ teams:'<circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5M16 5.5a2.5 2.5 0 1 1 0 5M18 14c2 .5 3 2 3 4"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ call:'<path d="M6 4h3l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v3a2 2 0 0 1-2 2A15 15 0 0 1 4 6a2 2 0 0 1 2-2z"/>',
+ cloud:'<path d="M7 18h11a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 18z"/>',
+ apps:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
+ search:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+ video:'<rect x="3" y="7" width="12" height="10" rx="2"/><path d="M15 11l6-3v8l-6-3"/>',
+ send:'<path d="M4 12l16-8-6 16-2-6-8-2z"/>',
+ edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',
+ filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+ more:'<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>',
+ back:'<path d="M15 6l-6 6 6 6"/>', fwd:'<path d="M9 6l6 6-6 6"/>',
+ people:'<circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5"/><path d="M17 8v6M14 11h6"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>', emoji:'<circle cx="12" cy="12" r="8"/><path d="M9 14c1.5 1.5 4.5 1.5 6 0M9.5 10h.01M14.5 10h.01"/>',
+ clip:'<path d="M15 7l-6 6a2 2 0 0 0 3 3l7-7a4 4 0 0 0-6-6l-7 7a6 6 0 0 0 8 8l5-5"/>',
+ chev:'<path d="M8 10l4 4 4-4"/>'
+};
+const ic = (n,s=20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
+const PRES = {dana:'',raj:'',lee:'',sam:'away',ana:'',tom:'',mia:'',ben:'off',nat:'',kim:'off',gm:'away',priya:''};
+const tav = (k,sm) => `<div class="t-av${sm?' sm':''}" style="background:${P[k].c}">${ini(P[k].n)}${PRES[k]!=null?`<span class="pr ${PRES[k]}"></span>`:''}</div>`;
+const tapp = sm => `<div class="t-av app${sm?' sm':''}">${MARK(sm?18:20)}</div>`;
+
+// Teams-only chats and channels. Not mirrored anywhere.
+const TC = {
+ dana:{n:'Dana K.',p:'dana',m:[
+  {t:'day',x:'Thursday, October 1'},
+  {t:'h',w:'dana',tm:'1:42 PM',x:'Got a sec after the 2pm? Want to go over the Hartwell audit agenda.'},
+  {t:'u',x:'Yep, 2:30 works.'},
+  {t:'h',w:'dana',tm:'4:05 PM',x:'The 4 minute recall drill was a big hit with Greg btw.'},
+  {t:'day',x:'Today'},
+  {t:'h',w:'dana',tm:'9:51 AM',x:'Saw Filler 3. You good?'},
+  {t:'u',x:'Yeah, Sam is on it. Planner already moved 4479 to Line 1.'},
+  {t:'h',w:'dana',tm:'9:53 AM',x:'Love it. Lunch at 12?'}],unread:1},
+ sam:{n:'Sam T.',p:'sam',m:[
+  {t:'day',x:'Today'},
+  {t:'h',w:'sam',tm:'10:40 AM',x:'Head is off. Bearing behind it was gritty too, swapping both.'},
+  {t:'u',x:'Thanks. How long?'},
+  {t:'h',w:'sam',tm:'10:42 AM',x:'40 more min.'}],unread:1},
+ raj:{n:'Raj P.',p:'raj',m:[
+  {t:'day',x:'Friday, October 2'},
+  {t:'h',w:'raj',tm:'11:15 AM',x:'I am off Thursday the 15th, dentist. Lee can cover the 7am.'},
+  {t:'u',x:'Approved. Put it in the calendar.'},
+  {t:'h',w:'raj',tm:'11:16 AM',x:'Done, thanks.'}]},
+ ben:{n:'Ben S.',p:'ben',m:[
+  {t:'day',x:'Wednesday, September 30'},
+  {t:'h',w:'ben',tm:'3:20 PM',x:'Called Polychem. Their Monday driver quit. That is the whole story.'},
+  {t:'u',x:'Ha. Thursdays then?'},
+  {t:'h',w:'ben',tm:'3:24 PM',x:'Yep, starting the 15th. Sending the formal note from the Buyer draft, it was basically ready to go.'}]},
+ mia:{n:'Mia L.',p:'mia',m:[
+  {t:'day',x:'Tuesday, September 29'},
+  {t:'h',w:'mia',tm:'7:02 AM',x:'Dock door 3 seal is shot again. Ticket is in with facilities.'},
+  {t:'day',x:'Today'},
+  {t:'h',w:'mia',tm:'8:15 AM',x:'Door 3 fixed. Finally.'}]},
+ ana:{n:'Ana R.',p:'ana',m:[
+  {t:'day',x:'Friday, October 2'},
+  {t:'h',w:'ana',tm:'2:10 PM',x:'Can we block 2 hours Wednesday for an audit walkthrough?'},
+  {t:'u',x:'Booked 1 to 3.'},
+  {t:'h',w:'ana',tm:'2:11 PM',x:'Perfect.'}]},
+ g_line3:{n:'Line 3 leads',g:['tom','kim','sam'],m:[
+  {t:'day',x:'Tuesday, September 29'},
+  {t:'h',w:'kim',tm:'6:05 AM',x:'Night notes: Capper 2 head 4 again, 3 jams. Left it on the board.'},
+  {t:'h',w:'tom',tm:'7:30 AM',x:'Will look at it today.'},
+  {t:'day',x:'Saturday, October 3'},
+  {t:'h',w:'kim',tm:'4:12 PM',x:'Cracked guide rail bracket on Line 3, swapped it. Who keeps leaning on that thing.'},
+  {t:'h',w:'sam',tm:'4:30 PM',x:'Not me.'},
+  {t:'day',x:'Today'},
+  {t:'h',w:'tom',tm:'9:47 AM',x:'Filler 3 is down. Honestly the bot caught it before I did.'}],unread:1},
+ g_hartwell:{n:'Hartwell account',g:['gm','dana','raj'],m:[
+  {t:'day',x:'Wednesday, September 30'},
+  {t:'h',w:'gm',tm:'9:10 AM',x:'Their buyer called. They might double October.'},
+  {t:'h',w:'raj',tm:'9:14 AM',x:'Running the what-if now.'},
+  {t:'day',x:'Friday, October 2'},
+  {t:'h',w:'gm',tm:'4:40 PM',x:'Told them yes. Thanks all, that was a fast answer.'},
+  {t:'h',w:'dana',tm:'4:42 PM',x:'Nice.'}]},
+ g_lunch:{n:'Friday lunch',g:['dana','mia','tom','ana'],m:[
+  {t:'day',x:'Friday, October 2'},
+  {t:'h',w:'mia',tm:'10:30 AM',x:'Shawarma or pizza?'},
+  {t:'h',w:'tom',tm:'10:31 AM',x:'Shawarma'},
+  {t:'h',w:'ana',tm:'10:31 AM',x:'Shawarma'},
+  {t:'h',w:'dana',tm:'10:35 AM',x:'Shawarma it is. I am buying, good week.'}]},
+ mtg_ops:{n:'Weekly ops sync',g:['dana','raj','sam','ana'],mtg:1,m:[
+  {t:'day',x:'Tuesday, September 29'},
+  {t:'sys',x:'Meeting started 10:00 AM · Ended 10:32 AM'},
+  {t:'h',w:'raj',tm:'10:33 AM',x:'Notes: new changeover sequence saves 2.9 h this week. Polychem late again. Hartwell audit Oct 8.'},
+  {t:'h',w:'dana',tm:'10:35 AM',x:'Recording is in the Files tab.'}]},
+ ch_general:{n:'General',ch:1,m:[
+  {t:'day',x:'Tuesday, September 29'},
+  {t:'h',w:'dana',tm:'8:00 AM',x:'Reminder: Hartwell audit is Thursday, Oct 8. Ana is running prep.'},
+  {t:'sys',x:'Dana K. added Singularity to this team. 5 channels are now synced.'},
+  {t:'day',x:'Friday, October 2'},
+  {t:'h',w:'gm',tm:'3:50 PM',x:'Shout out to Line 1 for a 94% week. Kim, your crew carried it.'}]},
+ ch_safety:{n:'Safety',ch:1,m:[
+  {t:'day',x:'Monday, September 28'},
+  {t:'h',w:'sam',tm:'7:15 AM',x:'Forklift pre-trip checks are on the operator tablets now. Paper sheets go away next week.'},
+  {t:'day',x:'Thursday, October 1'},
+  {t:'h',w:'dana',tm:'7:00 AM',x:'41 days without a recordable. Keep it going.'}]},
+ ch_handover:{n:'Shift handover',ch:1,m:[
+  {t:'day',x:'Today'},
+  {t:'h',w:'kim',tm:'6:02 AM',x:'Nights: all lines ran. Line 2 CIP done early. Capper 2 head 2 jammed twice near the end.'},
+  {t:'h',w:'tom',tm:'6:10 AM',x:'Got it, thanks Kim.'}]},
+ ch_budget:{n:'Budget 2027',ch:1,m:[
+  {t:'day',x:'Thursday, October 1'},
+  {t:'h',w:'gm',tm:'11:00 AM',x:'2027 capex draft due Oct 30. The Line 4 decision is on the agenda.'}]},
+ ch_announce:{n:'Announcements',ch:1,m:[
+  {t:'day',x:'Wednesday, September 30'},
+  {t:'h',w:'priya',tm:'9:00 AM',x:'The plant is closed Monday, Oct 12 for Thanksgiving. Benefits enrollment opens Oct 13.'}]},
+ ch_social:{n:'Social',ch:1,m:[
+  {t:'day',x:'Friday, October 2'},
+  {t:'h',w:'priya',tm:'12:00 PM',x:'Pumpkin carving contest Oct 30. Teams of 3, sign up by the 23rd.'}]}
+};
+const src = id => C[id] || TC[id];
+const CHATLIST = [['Pinned',['planner','dana','knowledge']],['Recent',['sam','g_line3','auditor','maint','g_hartwell','buyer','mia','ben','g_lunch','raj','ana','mtg_ops']]];
+const TEAMS = [
+ {n:'Plant 2 Operations',c:'#5b5fc7',ch:[['General','ch_general'],['OEE · Line 3','oee'],['Production planning','planning'],['Quality & food safety','quality'],['Maintenance & reliability','maintteam'],['Warehouse & shipping','warehouse'],['Safety','ch_safety'],['Shift handover','ch_handover']]},
+ {n:'Leadership',c:'#c4314b',ch:[['General','leaders'],['Budget 2027','ch_budget']]},
+ {n:'Westbrook All Staff',c:'#0f6cbd',ch:[['Announcements','ch_announce'],['Social','ch_social']]}
+];
+const isChan = id => TEAMS.some(t=>t.ch.some(c=>c[1]===id));
+const chName = id => {for(const t of TEAMS)for(const c of t.ch)if(c[1]===id)return [t,c[0]]};
+let tView='teams', tCur='oee';
+const T_UNREAD = new Set(['dana','sam','g_line3','planning']);
+
+const strip = h => (h||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+function preview(id){const m=[...src(id).m].reverse().find(m=>m.t==='u'||m.t==='h'||m.t==='a'||m.x||m.alert);
+  if(!m)return '';const who=m.t==='u'?'You: ':m.t==='h'?P[m.w].n.split(' ')[0]+': ':'';
+  return who+(strip(m.x)||(m.alert&&m.alert.ti)||(m.form&&m.form.ti)||'Card')}
+function lastTime(id){const m=[...src(id).m].reverse().find(m=>m.tm);return m?m.tm:''}
+function chatAvatar(id){if(C[id])return tapp();const s=TC[id];if(s.p)return tav(s.p);return `<div class="t-av grp">${s.mtg?ic('cal',16):ic('teams',16)}</div>`}
+function chatName(id){return C[id]?C[id].name:TC[id].n}
+
+function tList(){
+  if(tView==='chat') return `<div class="t-lh">Chat<span class="sp"></span><i>${ic('filter',18)}</i><i>${ic('edit',18)}</i></div><div class="t-scroll">`+
+   CHATLIST.map(([sec,ids])=>`<div class="t-sec">${ic('chev',12)}${sec}</div>`+ids.map(id=>`<div class="t-ci ${id===tCur?'on':''} ${T_UNREAD.has(id)?'unread':''}" onclick="tOpen('${id}')">${chatAvatar(id)}<div class="t-cm"><div class="t-cn"><b>${chatName(id)}</b><small>${lastTime(id)}</small></div><div class="t-cp">${preview(id)}</div></div></div>`).join('')).join('')+'</div>';
+  if(tView==='teams') return `<div class="t-lh">Teams<span class="sp"></span><i>${ic('filter',18)}</i><i>${ic('more',18)}</i></div><div class="t-scroll">`+
+   TEAMS.map(t=>`<div class="t-team"><div class="t-tav" style="background:${t.c}">${ini(t.n)}</div>${t.n}</div>`+t.ch.map(([n,id])=>`<div class="t-ch ${id===tCur?'on':''} ${T_UNREAD.has(id)?'unread':''}" onclick="tOpen('${id}')">${n}${C[id]?`<span class="sync" title="Synced with Singularity">${MARK(11)}</span>`:''}</div>`).join('')).join('')+'</div>';
+  // activity: open asks from every agent, across both apps
+  const items=[];Object.keys(C).forEach(id=>C[id].m.forEach(m=>{const o=m.alert||m.form;if(o&&o.done==null)items.push([id,m,o])}));
+  return `<div class="t-lh">Activity<span class="sp"></span><i>${ic('filter',18)}</i></div><div class="t-scroll"><div class="t-sec">Needs your answer</div>`+
+   items.map(([id,m,o])=>`<div class="t-act unread" onclick="tOpen('${id}')">${tapp(1)}<div class="t-cm"><b>${agentOf(C[id],m)}</b> in ${C[id].kind==='t'?chName(id)[1]:'chat'}<div>${o.ti}</div></div><small style="font-size:12px;color:#616161">${m.tm||''}</small></div>`).join('')+'</div>'}
+
+function tCard(o,id,i,k){
+  const done=o.done!=null, who=o.by?P[o.by].n+' picked':'You picked';
+  return `<div class="t-ac"><div class="t-ac-h"><span class="t-ac-lvl ${o.lvl||''}"></span>${o.ti}</div>`+(o.b?`<div class="t-ac-b">${o.b}</div>`:'')+
+   (o.kv?`<div class="t-facts">${o.kv.map(([a,b])=>`<span>${a}</span><b>${b}</b>`).join('')}</div>`:'')+
+   (o.f?`<div class="t-facts">${o.f.map(([a,b])=>`<span>${a}</span><b>${b}</b>`).join('')}</div>`:'')+
+   `<div class="t-ac-acts">${o.a.map(([l,s],j)=>`<button class="t-btn ${s==='pri'?'pri':''}" ${done?'disabled':''} onclick="tAct('${id}',${i},'${k}',${j})">${l}</button>`).join('')}</div>`+
+   (done?`<div class="t-ac-done">${who} <b>${o.a[o.done][0]}</b>. ${o.a[o.done][2]}</div>`:'')+'</div>'}
+function tParts(m,id,i){
+  const card=(t,inner)=>`<div class="t-ac">${t?`<div class="t-ac-h">${t}</div>`:''}${inner}</div>`;
+  return (m.x?`<div class="t-bub">${m.x}${m.x2||''}</div>`:'')+
+   (m.dash||m.k?card(m.dash&&m.dash.ti||m.ti||'',`<div class="t-kpis">${(m.dash?m.dash.k:m.k).map(([l,v,d,dir])=>`<div class="t-kpi"><small>${l}</small><b>${v}</b>${d?`<i class="${dir||''}">${d}</i>`:''}</div>`).join('')}</div>`):'')+
+   (m.table?card(m.table.ti,`<table class="t-tbl"><tr>${m.table.cols.map(c=>`<th>${c}</th>`).join('')}</tr>${m.table.rows.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</table>`):'')+
+   (m.alert?tCard(m.alert,id,i,'alert'):'')+(m.form?tCard(m.form,id,i,'form'):'')+
+   (m.files?`<div>${m.files.map(([n,t])=>`<span class="t-file"><i>${t.slice(0,3)}</i>${n}</span>`).join('')}</div>`:'')+
+   (m.link?`<div style="margin-top:8px"><span class="t-btn" onclick="openPlat('${m.link}')">${MARK(14,'#242424')} Open ${m.link} in Singularity</span></div>`:'')}
+function tAuthor(m,c){
+  if(m.t==='h')return [tav(m.w,1),`<b>${P[m.w].n}</b>${m.tm||''}`];
+  const n=agentOf(c,m);return [tapp(1),`<b>${n}</b><span class="t-app">App</span>${m.tm||''}${m.tag?` · ${m.tag}`:''}`]}
+function tReplies(th,c){return th?`<div class="t-reps"><div class="t-cnt">${th.length} replies</div>`+th.map(([w,x])=>w[0]==='@'
+  ?`<div class="t-row">${tapp(1)}<div class="t-col"><div class="t-meta"><b>${w.slice(1)}</b><span class="t-app">App</span></div><div class="t-bub">${x}</div></div></div>`
+  :`<div class="t-row">${tav(w,1)}<div class="t-col"><div class="t-meta"><b>${P[w].n}</b></div><div class="t-bub">${x}</div></div></div>`).join('')+'</div>':''}
+function tMsg(m,i,id,chan){const c=src(id);
+  if(m.t==='day')return `<div class="t-day">${m.x}</div>`;
+  if(m.t==='sys')return `<div class="t-sys">${m.x}</div>`;
+  if(m.t==='u')return chan
+    ?`<div class="t-post"><div class="t-pin"><div class="t-av sm" style="background:#ddd">Y</div><div class="t-col"><div class="t-meta"><b>You</b></div><div class="t-bub">${m.x}</div></div></div></div>`
+    :`<div class="t-mine"><div class="t-meta">${m.tm||''}</div><div class="t-bub">${m.x}</div></div>`;
+  const [av,meta]=tAuthor(m,c);
+  const body=m.t==='h'?`<div class="t-bub">${m.x}</div>`:tParts(m,id,i);
+  if(chan)return `<div class="t-post"><div class="t-pin">${av}<div class="t-col"><div class="t-meta">${meta}</div>${body}</div></div>${tReplies(m.th,c)}<div class="t-rep">Reply</div></div>`;
+  return `<div class="t-row">${av}<div class="t-col"><div class="t-meta">${meta}</div>${body}${m.th?tReplies(m.th,c):''}</div></div>`}
+
+function tMain(){const id=tCur,c=src(id),chan=isChan(id);
+  let head;
+  if(chan){const [t,n]=chName(id);head=`<div class="t-tav" style="background:${t.c}">${ini(t.n)}</div><b>${n}</b><div class="t-tabs"><span class="on">Posts</span><span>Files</span>${C[id]?`<span onclick="openPlat(C['${id}'].open)">${MARK(12,'#616161')}Singularity</span>`:''}<span>${ic('plus',14)}</span></div>`}
+  else head=`${chatAvatar(id)}<b>${chatName(id)}</b><div class="t-tabs"><span class="on">Chat</span><span>Files</span>${C[id]?`<span onclick="openPlat(C['${id}'].open)">${MARK(12,'#616161')}Open in Singularity</span>`:''}<span>${ic('plus',14)}</span></div>`;
+  const right=(C[id]?`<span class="t-sync">${MARK(11)} Synced with Singularity</span>`:'')+(chan?`<span class="t-btn">${ic('video',16)} Meet</span>`:`<span class="t-btn">${ic('video',16)}</span><span class="t-btn">${ic('call',16)}</span>`)+`<span style="padding:0 4px">${ic('people',20)}</span>`;
+  return `<div class="t-mh">${head}<div class="acts">${right}</div></div><div class="t-feed" id="tfeed">${c.m.map((m,i)=>tMsg(m,i,id,chan)).join('')}</div>`+
+   `<div class="t-comp"><input id="tin" placeholder="${chan?'Start a post':'Type a message'}" onkeydown="if(event.key==='Enter')tSend()"><span class="ic">${ic('emoji',20)}</span><span class="ic">${ic('clip',20)}</span><span class="ic" style="color:#5b5fc7" onclick="tSend()">${ic('send',20)}</span></div>`}
+
+function tDraw(keep){const f=document.getElementById('tfeed'),y=f&&f.scrollTop;
+  const unread=Object.keys(C).reduce((n,id)=>n+C[id].m.filter(m=>(m.alert||m.form)&&(m.alert||m.form).done==null).length,0);
+  tm.innerHTML=`<div class="t-title" data-drag><div class="lights"><i style="background:#ff5f57" data-w="close"></i><i style="background:#febc2e" data-w="min"></i><i style="background:#28c840" data-w="max"></i></div>
+   <div class="t-nav">${ic('back',18)}${ic('fwd',18)}</div><div class="t-search">${ic('search',16)}Search</div>
+   <div class="t-me">${ic('more',18)}<span>Westbrook Beverage</span><div class="t-av sm" style="background:#ddd">Y<span class="pr"></span></div></div></div>
+   <div class="t-body"><div class="t-rail">`+
+   [['bell','Activity','activity',unread],['chat','Chat','chat',T_UNREAD.size],['teams','Teams','teams',0],['cal','Calendar'],['call','Calls'],['cloud','OneDrive'],['apps','Apps']]
+     .map(([i,l,v,b])=>`<div class="t-ri ${v===tView?'on':''}" ${v?`onclick="tView='${v}';tDraw()"`:''}>${ic(i,22)}<span>${l}</span>${b?`<span class="t-bdg">${b}</span>`:''}</div>`).join('')+
+   `</div><div class="t-list">${tList()}</div><div class="t-main">${tMain()}</div></div>`;
+  const nf=document.getElementById('tfeed');nf.scrollTop=keep?y:nf.scrollHeight}
+function tOpen(id){tCur=id;T_UNREAD.delete(id);if(tView==='activity')tView=isChan(id)?'teams':'chat';tDraw()}
+function syncBoth(id,keep){tDraw(keep);if(C[id]&&cur===id){const y=feed.scrollTop;draw();if(keep)feed.scrollTop=y}else nav()}
+function tAct(id,i,k,j){const o=src(id).m[i][k];o.done=j;o.by=null;syncBoth(id,1)}
+// Singularity-side picks also redraw Teams
+const _act=act; act=function(i,k,j){_act(i,k,j);tDraw(1)};
+function tSend(){const inp=document.getElementById('tin'),v=inp.value.trim();if(!v)return;const id=tCur,c=src(id);
+  c.m.push({t:'u',x:v.replace(/</g,'&lt;')});syncBoth(id);
+  if(C[id])setTimeout(()=>{c.m.push({t:'a',x:`<p>${c.reply}</p>`});syncBoth(id)},900)}
+const _send=send; send=function(){const id=cur;_send();tDraw();setTimeout(()=>tDraw(),950)};
+
+// ================= desktop: windows, menu bar, dock =================
+const WINS={sing:win,teams:twin,plat:pwin}, NAMES={sing:'Singularity Chat',teams:'Microsoft Teams',plat:'The Singularity'};
+let z=10;
+function front(k){const w=WINS[k];w.classList.remove('hidden');w.style.zIndex=++z;
+  Object.values(WINS).forEach(x=>x.classList.toggle('front',x===w));appName.textContent=NAMES[k];
+  document.querySelectorAll('[data-app]').forEach(d=>d.classList.toggle('on',d.dataset.app===k&&d.classList.contains('mb-ic')));
+  document.querySelector(`.dk[data-app="${k}"]`).classList.add('run')}
+Object.entries(WINS).forEach(([k,w])=>{w.dataset.k=k;['n','s','e','w','ne','nw','se','sw'].forEach(d=>{const h=document.createElement('div');h.className='rz '+d;h.dataset.dir=d;w.appendChild(h)})});
+document.addEventListener('pointerdown',e=>{
+  const app=e.target.closest('[data-app]');if(app){const k=app.dataset.app;
+    if(app.classList.contains('dk')){app.classList.remove('bounce');void app.offsetWidth;app.classList.add('bounce')}
+    if(WINS[k])front(k);return}
+  const w=e.target.closest('.win');if(!w)return;front(w.dataset.k);
+  const wa=e.target.closest('[data-w]');if(wa){winAction(w,wa.dataset.w);return}
+  const rz=e.target.closest('.rz'),drag=!rz&&e.target.closest('[data-drag]')&&!e.target.closest('button,a,input,textarea,.t-ri,.mb-ic');
+  if(!rz&&!drag)return;e.preventDefault();moved=1;
+  const r={x:e.clientX,y:e.clientY,l:w.offsetLeft,t:w.offsetTop,w:w.offsetWidth,h:w.offsetHeight},d=rz?rz.dataset.dir:'',MW=720,MH=460;
+  const mv=ev=>{const dx=ev.clientX-r.x,dy=ev.clientY-r.y;let L=r.l,T=r.t,W=r.w,H=r.h;
+    if(drag){L+=dx;T=Math.max(28,T+dy)}
+    if(d.includes('e'))W=Math.max(MW,r.w+dx);
+    if(d.includes('s'))H=Math.max(MH,r.h+dy);
+    if(d.includes('w')){W=Math.max(MW,r.w-dx);L=r.l+r.w-W}
+    if(d.includes('n')){T=Math.max(28,Math.min(r.t+dy,r.t+r.h-MH));H=r.t+r.h-T}
+    Object.assign(w.style,{left:L+'px',top:T+'px',width:W+'px',height:H+'px'})};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);document.body.classList.remove('dragging')};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up);document.body.classList.add('dragging')});
+function winAction(w,a){
+  if(a==='close'||a==='min'){w.classList.add('hidden');const o=Object.keys(WINS).find(k=>WINS[k]!==w&&!WINS[k].classList.contains('hidden'));if(o)front(o);
+    if(a==='close')document.querySelector(`.dk[data-app="${w.dataset.k}"]`).classList.remove('run');return}
+  if(w.dataset.prev){Object.assign(w.style,JSON.parse(w.dataset.prev));delete w.dataset.prev;return}
+  w.dataset.prev=JSON.stringify({left:w.style.left,top:w.style.top,width:w.style.width,height:w.style.height});
+  Object.assign(w.style,{left:'0px',top:'28px',width:innerWidth+'px',height:(innerHeight-28-80)+'px'})}
+function place(){requestAnimationFrame(()=>{feed.scrollTop=feed.scrollHeight;const t=document.getElementById('tfeed');if(t)t.scrollTop=t.scrollHeight});const H=Math.max(460,Math.min(780,innerHeight-28-80-24)),W=Math.max(720,Math.min(1220,innerWidth-140));
+  const L=Math.max(8,(innerWidth-W)/2-50);
+  Object.assign(twin.style,{left:Math.min(innerWidth-W-8,L+100)+'px',top:'52px',width:W+'px',height:H+'px'});
+  Object.assign(win.style,{left:L+'px',top:'38px',width:W+'px',height:H+'px'})}
+// Reset: snapshot the starting data once, restore it on demand. ponytail: JSON clone is fine, the data is plain.
+const START=JSON.stringify({C,TC,U:[...T_UNREAD],B:Object.fromEntries(Object.keys(C).map(k=>[k,C[k].badge||0]))});
+function resetDemo(){const s=JSON.parse(START);
+  Object.keys(s.C).forEach(k=>C[k]=s.C[k]);Object.keys(s.TC).forEach(k=>TC[k]=s.TC[k]);
+  T_UNREAD.clear();s.U.forEach(x=>T_UNREAD.add(x));
+  cur='oee';tView='teams';tCur='oee';moved=0;modal.classList.remove('on');
+  Object.values(WINS).forEach(w=>{w.classList.remove('hidden');delete w.dataset.prev});
+  document.querySelectorAll('.dk[data-app]').forEach(d=>d.classList.add('run'));
+  draw();tDraw();place();front('teams');front('sing');pCur='exec';pDraw();pwin.classList.add('hidden');pwin.style.width='';document.querySelector('.dk[data-app=plat]').classList.remove('run')}
+let moved=0;addEventListener('resize',()=>{if(!moved)place()}); // ponytail: re-fit until the user arranges windows
+place();tDraw();front('teams');front('sing');
+document.querySelectorAll('.mark-slot').forEach(s=>s.innerHTML=MARK(+s.dataset.s||18,s.dataset.c||'#00d4de'));
+
+// ================= The Singularity (platform) =================
+// Look copied from real product screens (sales-deck + website product shots). Screens read C live,
+// so a pick made in either chat window shows up in the platform's queues and statuses.
+const pick=(id,ti,labels)=>{const m=C[id].m.find(m=>{const o=m.alert||m.form;return o&&o.ti===ti});const o=m&&(m.alert||m.form);
+  return o&&o.done!=null?labels[o.done]:labels.at(-1)};
+const bd=(t,c='')=>`<span class="p-bd ${c}">${t}</span>`;
+const PNAV=[['Production Planning','plan','teams'],['Materials Planning','materials','apps'],['Operations Dashboard','oee','bell'],['Track & Trace','trace','search'],['Analytics','analytics','filter'],['Continuous Improvement','rca','people'],['Quality','quality','edit'],['Operator Screens','operator','video'],['Warehouse','warehouse','cloud'],['Asset Tracking','assets','clip'],['MRO Planning','mro','cal'],['Knowledge Helper','knowledge','chat']];
+const PS = {
+ exec:()=>({nav:'exec',tabs:['Executive Reporting'],crumb:'Executive Reporting',h:'Executive Reporting',b:[
+  {k:'card',ti:'OEE Performance · Plant 2',x:`<div class="p-donuts">${[['Availability',84],['Performance',88],['Quality',96],['Expected On-Time',98]].map(([l,v])=>donut(l,v)).join('')}</div>`},
+  {k:'two',a:{k:'table',ti:'Cost of Performance Issues',cols:['Line','Last 7 days'],rows:[['Line 3','$18,420'],['Line 1','$6,110'],['Line 2','$2,970']]},
+   b:{k:'table',ti:'Downtime Causes',cols:['Cause','Minutes'],rows:[['Jam (Capper 2)','306'],['Mechanical (Filler 3)','112'],['Changeover','216'],['Starved','74']]}},
+  {k:'card',c:'blue',ti:'Agent activity, last 7 days',x:`<p>38 actions taken inside your limits, 14 approved by people, 3 declined, 212 questions answered.</p>${bd('All in the audit trail','blue')}`}]}),
+ oee:()=>({nav:'oee',tabs:['Dashboard','Assets OEE','Chart Recorders','MAV'],tab:1,crumb:'Operations Dashboard › Assets OEE',h:'Assets OEE · Line 3',b:[
+  {k:'tiles',items:[['71%','OEE this hour','plan 80%','red'],['84%','Availability',''],['88%','Performance','','amber'],['96%','Quality',''],['1','Assets faulted','Filler 3','red']]},
+  {k:'card',c:'blue',ti:'OEE Watch Agent Summary',x:`<p>Filler 3 stopped automatically at 9:42 after 3 torque faults in 4 minutes. Work order WO-2304 is open for Sam T. Capper 2 jam rate is 4 an hour on head 2.</p>${bd('Auto action','blue')} ${bd('Filler 3: '+pick('oee','I stopped Filler 3',['kept down','restart requested','details sent','awaiting decision']),'red')} ${bd('Capper 2: '+pick('oee','Stop Capper 2?',['stopped','running','Sam requested','awaiting decision']),'orange')}`},
+  {k:'chart',ti:'OEE by hour, Line 3',series:[['#22c3d6',[82,81,80,79,77,74,71]],['#3b6b75',[80,80,80,80,80,80,80]]],labels:['3a','4a','5a','6a','7a','8a','9a'],leg:[['#22c3d6','OEE'],['#3b6b75','Plan']]},
+  {k:'table',ti:'Asset status',cols:['Asset','Status','Availability','Note'],rows:[
+   ['Filler 3',bd('Faulted','red'),'61%','Torque head at 1,900 h'],['Capper 2',bd('Running','green'),'79%','4 jams last hour'],['Labeler 3',bd('Running','green'),'97%',''],['Case Packer 3',bd('Idle','orange'),'88%','Starved by Filler 3']]}]}),
+ plan:()=>({nav:'plan',tabs:['Command Center','Production Demand','Schedule','Sales Orders','Sales Forecast','Inventory Forecast'],tab:0,crumb:'Production Planning › Command Center',h:'Production Planning Command Center',sub:['Dashboard','Planning Issues','Production Recommendations','Simulations'],b:[
+  {k:'tiles',items:[['43','Active Orders',''],['2','Schedule Issues','','red'],['1','Planning Issues',''],['91%','On Track','40 of 43 orders'],['100%','Forecast Coverage','12 of 12 products']]},
+  {k:'card',c:'blue',ti:'Planner Agent Summary',x:`<p>Order 4471 is at risk for Wednesday: resin is short by 1.2 t. Filler 3 is down; Line 3 replan proposed with no late orders.</p>${bd('Schedule at risk','red')}`},
+  {k:'table',ti:'Work Queue',cols:['Priority','Type','Title','Status','Due / Risk'],rows:[
+   [bd('high','orange'),'Reschedule','Move 4471 to Thursday',pick('planner','Move Order 4471 to Thursday?',['Committed','Kept Wednesday','Split proposed','Awaiting approval']),'Wed, resin'],
+   [bd('high','orange'),'Replan','Line 3 replan after Filler 3',pick('planning','Commit the Line 3 replan?',['Committed','Waiting for Sam','Proposed']),'Today'],
+   [bd('high','orange'),'Material','Resin shortfall, Wednesday',pick('planning','Pick one: resin shortfall on Wednesday',['Option 1 chosen','Option 2 chosen','In discussion','Default at 11 am']),'Wed'],
+   [bd('low','green'),'Rush order','Hartwell 12,000 u, 1 L citrus','Committed','Thu']]},
+  {k:'card',c:'orange',ti:'Bottleneck Insights',x:`<p>Top bottleneck: <b>Line 1</b>. Running above 90% utilization for the next 7 days with 4479 moved over.</p>${bd('high','orange')}`}]}),
+ whatif:()=>({nav:'plan',tabs:['Command Center','Production Demand','Schedule','Sales Orders','Sales Forecast','Inventory Forecast'],tab:0,crumb:'Production Planning › Simulations',h:'What-if: Hartwell October x2',sub:['Dashboard','Planning Issues','Production Recommendations','Simulations'],subOn:3,b:[
+  {k:'table',ti:'Scenarios',cols:['Scenario','Line 1 load','Late orders','Extra cost'],rows:[['As planned','86%','0','none'],['Hartwell x2, no change','112%',bd('4','red'),'none'],['Hartwell x2 + 2 Saturdays','97%','0','2 shifts OT'],['Hartwell x2, push Northline 3 days','99%','0','Northline OK per contract']]},
+  {k:'chart',ti:'Line 1 load by week',series:[['#22c3d6',[86,88,84,87]],['#f2994a',[112,115,108,110]],['#2fbf71',[97,99,95,96]]],labels:['Wk 41','Wk 42','Wk 43','Wk 44'],leg:[['#22c3d6','As planned'],['#f2994a','x2, no change'],['#2fbf71','x2 + Saturdays']]}]}),
+ quality:()=>({nav:'quality',tabs:['Dashboard','Records','Schedule','Holds','Configuration'],tab:3,crumb:'Quality › Holds',h:'Holds',b:[
+  {k:'tiles',items:[['97.8%','Pass Rate','+0.6 vs prior period','plain'],['1','Open Holds','','plain'],['412','Records Submitted','','plain'],['98%','Checks on Time','','plain']]},
+  {k:'card',c:'blue',ti:'Auditor Agent Summary',x:`<p>Placed lot 2510-05A on hold at 9:44 after the Filler 3 torque fault. A 20 bottle seal check clears it. Two September CCP gaps remain before Thursday's Hartwell audit.</p>${bd('Hold placed automatically','blue')}`},
+  {k:'table',ti:'Open holds',cols:['Lot','Units','Reason','Placed by','Status'],rows:[['2510-05A','1,200','Filler 3 torque fault','Auditor agent, 9:44',bd(pick('quality','Release or keep the 1,200 units on hold?',['On hold, check requested','Release pending QA','On hold']),'orange')]]},
+  {k:'table',ti:'Audit readiness, Hartwell Oct 8',cols:['Area','Status'],rows:[['Metal detector CCP logs',pick('auditor','2 gaps in the September CCP logs',['Assigned to Ana R.','Records pulled','Accepted, documented','2 gaps open'])],['Pasteurizer charts','Complete'],['Recall drill','Done Oct 1, 4 min'],['Supplier approvals','Labelcraft expires Oct 15']]}]}),
+ rca:()=>({nav:'rca',tabs:['Summary','Issues','Cases','Tasks'],tab:2,crumb:'Continuous Improvement › Cases › RC-2510-02',h:'RC-2510-02 · Filler 3 stop',b:[
+  {k:'tiles',items:[['Open','Stage','Analysis','plain'],['2','Contributors','Tom B., Sam T.','plain'],['1','Countermeasures','','plain']]},
+  {k:'table',ti:'Cause analysis',cols:['Cause area','Finding','Source'],rows:[['Machine','Torque head at 1,900 h; last two failed at 1,800 to 2,000 h','Asset history'],['Method','No PM task for torque head hours','PM plan'],['Material','Nothing unusual','Lot records'],['People','Nothing unusual','Shift log']]},
+  {k:'table',ti:'Countermeasures',cols:['Action','Owner','Due'],rows:[['PM task at 1,600 h for every filler torque head','Sam T.','Oct 16']]},
+  {k:'card',c:'green',ti:'Lessons learned',x:'<p>Torque drift shows up 20 to 40 minutes before a hard fault. OEE Watch now flags drift, not just spikes.</p>'}]}),
+ mro:()=>({nav:'mro',tabs:['Dashboard','Work Orders','PM Schedule','Parts'],tab:1,crumb:'MRO Planning › Work Orders',h:'Work Orders',b:[
+  {k:'tiles',items:[['3','Open Work Orders',''],['14','PMs This Week','22 h, all in planned downtime'],['2','Parts Below Min','PO 7731 placed','amber']]},
+  {k:'table',ti:'Open work orders',cols:['WO','Asset','Work','Assigned','Status'],rows:[['WO-2304','Filler 3','Swap torque head + bearing','Sam T.',bd('In progress','blue')],['WO-2306','Capper 2','Chuck insert, head 2','Sam T.',bd('Queued','orange')],['WO-2299','Guide rail L3','Bracket pattern review','Kim W.',bd('Open')]]},
+  {k:'table',ti:'Parts',cols:['Part','On hand','Min','Next in'],rows:[['Filler torque head','0 (1 reserved)','2','Oct 23, PO 7731'],['Chuck insert, capper','1','4','Oct 23, PO 7731']]}]}),
+ materials:()=>({nav:'materials',tabs:['Command Center','Summary','Needs Ordering','Projected On Hand','Purchase Orders'],tab:3,crumb:'Materials Planning › Projected On Hand',h:'Projected On Hand',b:[
+  {k:'card',c:'blue',ti:'Materials Agent Summary',x:`<p>2 materials projected short in the next 3 weeks. Citrus 1 L labels: ${pick('buyer','Order the citrus labels today?',['PO 7738 raised','waiting a day','not ordered yet'])}.</p>${bd('Stockout risk','red')}`},
+  {k:'table',ti:'Projected short',cols:['Material','Short on','Short by','Supplier','Fix'],rows:[['PET resin','Wed, Oct 7','1.2 t','Polychem','PO 7702, truck Wed 4 pm'],['Citrus 1 L label','Mon, Oct 12','8,000','Labelcraft',pick('buyer','Order the citrus labels today?',['PO 7738','Wait a day','Raise PO'])]]},
+  {k:'table',ti:'Supplier on-time, last 5',cols:['Supplier','On time','Note'],rows:[['Polychem','2 / 5','Moving to Thursday deliveries Oct 15'],['CapCo','5 / 5',''],['Labelcraft','4 / 5','Approval expires Oct 15']]}]}),
+ trace:()=>({nav:'trace',tabs:['Lots','Trace','Recall'],tab:1,crumb:'Track & Trace › Lot 2409-17',h:'Lot 2409-17 · 1 L Citrus',b:[
+  {k:'tiles',items:[['4 min','Trace time','Recall drill, Oct 1','plain'],['3','Customers',''],['3','Input lots','']]},
+  {k:'table',ti:'Backward',cols:['Input','Lot','Supplier'],rows:[['PET resin','PC-0913','Polychem'],['Labels','LC-2288','Labelcraft'],['Caps','CC-771','CapCo']]},
+  {k:'table',ti:'Forward',cols:['Destination','Cases','Shipped'],rows:[['Hartwell DC Winnipeg','640','Sep 19'],['Northline','300','Sep 20'],['On hand, Plant 2','60','']]}]}),
+ knowledge:()=>({nav:'knowledge',tabs:['Documents','Ask'],tab:1,crumb:'Knowledge Helper › Plant 2 SOPs',h:'Ask',b:[
+  {k:'card',ti:'How do we change Line 2 over from 500 ml to 1 L?',x:`<div class="p-qa"><p>Six steps. The two people usually miss are 3 and 5: reset fill volume in recipe <b>L2-1000</b>, and weigh 5 test bottles (spec 1,002 to 1,012 g).</p><span class="cite">SOP-114 rev 6</span><span class="cite">Changeover log, Sep 29</span><span class="cite">Video: star wheel swap, 2:14</span></div>${bd('High confidence','green')}`},
+  {k:'table',ti:'Recently added to the library',cols:['Entry','From','Approved by'],rows:[['Capper jams: check chuck insert first','Tom B., Oct 1','Ana R.'],['Line 2 changeover: stage star wheels','Tom B., Oct 1','Tom B.']]}]})
+};
+Object.assign(PS,{
+ analytics:()=>({nav:'analytics',tabs:['Throughput Explorer','Plan vs Actual','Losses'],tab:1,crumb:'Analytics › Plan vs Actual',h:'Plan vs Actual · Last 7 days',b:[
+  {k:'tiles',items:[['1.24M','Units produced','plan 1.27M','plain'],['97.6%','Plan attainment','','plain'],['82%','OEE, all lines','+2 vs prior week','plain'],['9.5 h','Downtime','-5 h vs prior week','plain']]},
+  {k:'chart',ti:'Units per day, all lines (thousands)',series:[['#22c3d6',[176,181,174,183,179,171,176]],['#3b6b75',[182,182,182,182,182,170,170]]],labels:['Tue','Wed','Thu','Fri','Sat','Sun','Mon'],leg:[['#22c3d6','Actual'],['#3b6b75','Plan']]},
+  {k:'two',a:{k:'table',ti:'By line',cols:['Line','Actual','Plan','Attainment'],rows:[['Line 1','468k','455k',bd('103%','green')],['Line 2','431k','430k',bd('100%','green')],['Line 3','341k','385k',bd('89%','red')]]},
+   b:{k:'table',ti:'Top losses',cols:['Loss','Line','Hours'],rows:[['Capper 2 jams','Line 3','5.1'],['Changeovers','All','3.6'],['Filler 3 torque fault','Line 3','1.9'],['Starved, resin','Line 1','0.8']]}}]}),
+ operator:()=>({nav:'operator',tabs:['Screens','Assignments','Editor'],tab:0,crumb:'Operator Screens › Line 2 changeover',h:'Line 2 Changeover',b:[
+  {k:'card',c:'green',ti:'Updated Oct 1 from a Knowledge suggestion',x:`<p>Step 1 was added after the Knowledge agent noticed the fastest changeovers staged star wheels early. Approved by Tom B., the screen owner.</p>${bd('Live on Line 2 tablets','green')}`},
+  {k:'table',ti:'Checklist, as the operator sees it',cols:['#','Step','Check'],rows:[['1','Stage blue star wheels at B4 before the last 500 ml pallet',bd('new','blue')],['2','Run out 500 ml caps, clear the hopper','☐'],['3','Swap star wheels (blue set)','☐'],['4','Load recipe L2-1000, do not set volume by hand','☐'],['5','Move guide rails to the 1 L marks','☐'],['6','Run 20 bottles, weigh 5 (1,002 to 1,012 g)','☐'],['7','QA sign-off in the release log','☐']]},
+  {k:'table',ti:'Screens on the floor',cols:['Screen','Assigned to','Owner','Last change'],rows:[['Line 2 changeover','Line 2 tablets','Tom B.','Oct 1'],['Pre-op checklist','Lines 1 to 3','Ana R.','Sep 30'],['Forklift pre-trip','Forklift kiosks','Sam T.','Sep 28'],['Filler HMI','Fillers 1 to 3','Sam T.','Aug 14']]}]}),
+ warehouse:()=>({nav:'warehouse',tabs:['Receiving','Inventory','Picking','Shipping'],tab:1,crumb:'Warehouse › Inventory',h:'Inventory · Plant 2',b:[
+  {k:'tiles',items:[['7','Outbound today',''],['2','Inbound today','Polychem moved to Wed'],['1','Lots blocked','2510-05A, QA hold','red'],['96%','Location accuracy','','plain']]},
+  {k:'table',ti:'Finished goods',cols:['SKU','On hand','Allocated','Status'],rows:[['1 L citrus','18,400','12,000 (Hartwell)',bd('OK','green')],['500 ml citrus','42,100','30,500',bd('OK','green')],['1 L lemon-lime','9,800','9,000',bd('Low','orange')],['Lot 2510-05A, 1 L citrus','1,200','0',bd('Blocked: QA hold','red')]]},
+  {k:'table',ti:'Docks today',cols:['Door','Load','Carrier','Time'],rows:[['1','Hartwell DC Winnipeg','Bison','8:00'],['2','Northline 88213','TFI','10:30'],['3','Inbound labels, Labelcraft','Purolator','13:00 (door seal fixed)']]}]}),
+ assets:()=>({nav:'assets',tabs:['Dashboard','Assets','Locations','Map','Schedule'],tab:1,crumb:'Asset Tracking › Assets',h:'Tracked Tools',b:[
+  {k:'tiles',items:[['64','Tracked tools','','plain'],['9','Checked out','','plain'],['0','Overdue','Kim returned the wrench Wed','plain'],['3','Reserved this week','','plain']]},
+  {k:'table',ti:'Checked out',cols:['Tool','With','Since','Due'],rows:[['Torque wrench, large','Sam T.','Today 9:50','Today 17:00'],['Bearing puller','Sam T.','Today 10:20','Today 17:00'],['Label gauge','Ana R.','Fri','Wed']]},
+  {k:'table',ti:'History: torque wrench, large',cols:['Event','Who','When'],rows:[['Checked out','Kim W.','Mon, Sep 28, 22:10'],['Overdue flagged by Maintenance agent','','Wed, Sep 30, 6:00'],['Checked in, tool crib','Kim W.','Wed, Sep 30, 6:20'],['Checked out, WO-2304','Sam T.','Today 9:50']]}]}),
+ admin:()=>{const pend=[];Object.keys(C).forEach(id=>C[id].m.forEach(m=>{const o=m.alert||m.form;if(o&&o.done==null)pend.push([agentOf(C[id],m),o.ti,C[id].name,m.tm||''])}));
+  return {nav:'admin',tabs:['Agents','Subscriptions','Authority','Monitoring','Approvals'],tab:2,crumb:'Admin Configuration › AI Admin',h:'Agent Authority',b:[
+  {k:'card',c:'blue',ti:'What agents may do on their own',x:'<p>Everything else waits for a person. Every action, by a person or an agent, lands in the audit trail.</p>'},
+  {k:'table',ti:'Authority rules',cols:['Agent','Action','Rule','Approver'],rows:[['OEE Watch','Stop a machine',bd('Auto + notify','blue')+' repeated safety fault only','Line lead'],['OEE Watch','Stop a machine (other)',bd('Ask first','orange'),'Line lead'],['Auditor','Place a quality hold',bd('Auto + notify','blue'),'QA manager'],['Auditor','Release a hold',bd('Never','red'),'QA manager'],['Planner','Move an order',bd('Ask first','orange')+' expires in 4 h, then default','Scheduler'],['Buyer','Raise a PO',bd('Ask first','orange')+' over $500','Purchasing'],['Maintenance','Open a work order',bd('Auto + notify','blue'),'Maintenance lead'],['Knowledge','Answer a question',bd('Auto','green')+' approved sources only','None']]},
+  {k:'table',ti:`Approval queue (${pend.length} pending)`,cols:['Agent','Request','Where','Raised'],rows:pend.length?pend:[['','Nothing waiting','','']]}]}}
+});
+const LINK2SCREEN={'Line 3 OEE':'oee','Production plan':'plan','What-if scenario':'whatif','What-if: Hartwell x2':'whatif','Quality':'quality','Quality records':'quality','Investigation RC-2510-02':'rca','Maintenance planning':'mro','PM schedule':'mro','Materials planning':'materials','Projected on hand':'materials','Warehouse':'trace','Executive dashboard':'exec','Knowledge Library':'knowledge','Line 3 OEE ':'oee'};
+let pCur='exec';
+function donut(l,v){const r=28,c=2*Math.PI*r;return `<div class="p-donut"><div>${l}</div><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="${r}" fill="none" stroke="#123b44" stroke-width="7"/><circle cx="38" cy="38" r="${r}" fill="none" stroke="#5fd39a" stroke-width="7" stroke-dasharray="${c*v/100} ${c}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" fill="#fff" font-size="14" font-family="IBM Plex Sans">${v}%</text></svg></div>`}
+function pChart(b){const all=b.series.flatMap(s=>s[1]),mx=Math.max(...all)+4,mn=Math.min(...all)-4,W=600,H=150;
+  const pts=a=>a.map((v,i)=>`${(30+i/(a.length-1)*(W-40)).toFixed(1)},${(H-20-(v-mn)/(mx-mn)*(H-30)).toFixed(1)}`).join(' ');
+  return `<svg class="p-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${[0,1,2,3].map(i=>`<line x1="30" x2="${W-10}" y1="${10+i*(H-30)/3}" y2="${10+i*(H-30)/3}" stroke="#123b44"/>`).join('')}
+   ${b.series.map(([c,a])=>`<polyline points="${pts(a)}" fill="none" stroke="${c}" stroke-width="2" vector-effect="non-scaling-stroke"/>`).join('')}
+   ${b.labels.map((l,i)=>`<text x="${30+i/(b.labels.length-1)*(W-40)}" y="${H-4}" fill="#8db0b7" font-size="10" text-anchor="middle">${l}</text>`).join('')}</svg>`}
+function pBlock(b){switch(b.k){
+  case 'tiles':return `<div class="p-tiles">${b.items.map(([v,l,s,t])=>`<div class="p-tile ${t||''}"><b>${v}</b><small>${l}</small>${s?`<em>${s}</em>`:''}</div>`).join('')}</div>`;
+  case 'card':return `<div class="p-card ${b.c||''}">${b.ti?`<h4>${b.ti}</h4>`:''}${b.x}</div>`;
+  case 'table':return `<div class="p-card"><h4>${b.ti}<span class="p-btn">View Details</span></h4><table class="p-tbl"><tr>${b.cols.map(c=>`<th>${c}</th>`).join('')}</tr>${b.rows.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  case 'chart':return `<div class="p-card"><h4>${b.ti}<span class="p-leg" style="margin-left:auto">${b.leg.map(([c,l])=>`<span><span style="color:${c}">━</span> ${l}</span>`).join('')}</span></h4>${pChart(b)}</div>`;
+  case 'two':return `<div class="p-two">${pBlock(b.a)}${pBlock(b.b)}</div>`}}
+function pDraw(){const s=PS[pCur](),y=document.querySelector('#pl .p-body')?.scrollTop||0,same=pl.dataset.s===pCur;
+  pl.innerHTML=`<div class="p-side"><div class="p-sw" data-drag><div class="lights"><i style="background:#ff5f57" data-w="close"></i><i style="background:#febc2e" data-w="min"></i><i style="background:#28c840" data-w="max"></i></div><b>Westbrook Beverage <span>⌃⌄</span></b></div>
+   <div class="p-nav"><div class="p-ni ${s.nav==='exec'?'on':''}" onclick="openScreen('exec')">${ic('filter',15)}Executive Reporting</div><div class="p-ni ${s.nav==='admin'?'on':''}" onclick="openScreen('admin')">${ic('apps',15)}Admin Configuration</div><div class="p-div"></div>
+   <div class="p-plant"><b>Plant 2 <span>⌃⌄</span></b><small><span>Local Time</span><span>09:58 CDT</span></small>
+   ${PNAV.map(([n,k,i])=>`<div class="p-ni ${s.nav===k?'on':''} ${k?'':'dim'}" ${k?`onclick="openScreen('${k}')"`:''}>${ic(i,15)}${n}</div>`).join('')}</div></div>
+   <div class="p-foot"><span>⏻ Logout</span><span>? Support</span><span>☾</span></div></div>
+   <div class="p-main"><div class="p-top" data-drag><div class="p-tabs">${s.tabs.map((t,i)=>`<span class="${i===(s.tab||0)?'on':''}">${t}</span>`).join('')}</div><div class="p-bell">${ic('bell',16)}<i></i></div></div>
+   <div class="p-body"><div class="p-crumb">${s.crumb}</div><div class="p-h">${s.h}</div>${s.sub?`<div class="p-sub">${s.sub.map((t,i)=>`<span class="${i===(s.subOn||0)?'on':''}">${t}</span>`).join('')}</div>`:''}${s.b.map(pBlock).join('')}</div>
+   <div class="p-ai" onclick="front('sing')" title="Ask an agent">${ic('chat',20)}</div></div>`;
+  pl.dataset.s=pCur;if(same)pl.querySelector('.p-body').scrollTop=y}
+function openScreen(k){pCur=k;pDraw()}
+function openPlat(name){pCur=LINK2SCREEN[name]||'exec';pDraw();if(pwin.classList.contains('hidden')&&!pwin.style.width)placePlat();front('plat')}
+function placePlat(){const W=Math.max(720,Math.min(1240,innerWidth-100)),H=Math.max(460,Math.min(800,innerHeight-28-80-30));
+  Object.assign(pwin.style,{left:Math.max(8,(innerWidth-W)/2+30)+'px',top:'44px',width:W+'px',height:H+'px'})}
+// keep the platform in step with picks made in either chat window
+const _actP=act;act=function(...a){_actP(...a);pDraw()};
+const _tActP=tAct;tAct=function(...a){_tActP(...a);pDraw()};
+pDraw();
+</script>
+</body>
+</html>
